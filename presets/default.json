@@ -1,0 +1,38 @@
+{
+  "name": "Default",
+  "projectType": "hardware",
+  "checks": {
+    "github_link_works": {
+      "enabled": true,
+      "required": true
+    },
+    "readme_present": {
+      "enabled": true,
+      "required": true
+    },
+    "readme_quality": {
+      "enabled": true,
+      "required": false,
+      "severity": "warning"
+    },
+    "readme_has_project_image": {
+      "enabled": true,
+      "required": true
+    },
+    "three_d_files_present": {
+      "enabled": true,
+      "required": true,
+      "minimum_file_count": 1
+    },
+    "pcb_files_present": {
+      "enabled": true,
+      "required": true,
+      "require_source_design_files": true
+    },
+    "bom_present_if_required": {
+      "enabled": true,
+      "required": false,
+      "severity": "warning"
+    }
+  }
+}

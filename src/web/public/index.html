@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cornelius - YSWS Review Engine</title>
+  <style>
+    :root {
+      --bg: #0d1117;
+      --surface: #161b22;
+      --border: #30363d;
+      --text: #e6edf3;
+      --text-dim: #8b949e;
+      --accent: #f0c000;
+      --green: #3fb950;
+      --red: #f85149;
+      --yellow: #d29922;
+      --blue: #58a6ff;
+      --purple: #bc8cff;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    .container { max-width: 900px; margin: 0 auto; padding: 2rem; }
+
+    .logo {
+      text-align: center;
+      padding: 2rem 0;
+      color: var(--accent);
+      font-size: 0.7rem;
+      line-height: 1.2;
+      white-space: pre;
+    }
+
+    .subtitle {
+      text-align: center;
+      color: var(--text-dim);
+      margin-bottom: 2rem;
+      font-size: 0.85rem;
+    }
+
+    .subtitle strong { color: var(--text); font-size: 1.1rem; }
+
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .panel h2 {
+      font-size: 0.85rem;
+      color: var(--accent);
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      margin-bottom: 1rem;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 0.5rem;
+    }
+
+    .input-row {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+    }
+
+    input[type="text"], select {
+      flex: 1;
+      padding: 0.6rem 1rem;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      color: var(--text);
+      font-family: inherit;
+      font-size: 0.85rem;
+    }
+
+    input:focus, select:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+
+    button {
+      padding: 0.6rem 1.5rem;
+      background: var(--accent);
+      color: var(--bg);
+      border: none;
+      border-radius: 4px;
+      font-family: inherit;
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 0.85rem;
+      transition: opacity 0.2s;
+    }
+
+    button:hover { opacity: 0.85; }
+    button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .status-badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 3px;
+      font-size: 0.75rem;
+      font-weight: bold;
+      text-transform: uppercase;
+    }
+
+    .status-pass { background: rgba(63,185,80,0.15); color: var(--green); border: 1px solid var(--green); }
+    .status-fail { background: rgba(248,81,73,0.15); color: var(--red); border: 1px solid var(--red); }
+    .status-warning { background: rgba(210,153,34,0.15); color: var(--yellow); border: 1px solid var(--yellow); }
+    .status-error { background: rgba(248,81,73,0.15); color: var(--red); border: 1px solid var(--red); }
+    .status-skipped { background: rgba(139,148,158,0.15); color: var(--text-dim); border: 1px solid var(--border); }
+
+    .check-item {
+      padding: 0.75rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: flex-start;
+      gap: 1rem;
+    }
+
+    .check-item:last-child { border-bottom: none; }
+    .check-info { flex: 1; }
+    .check-name { font-weight: bold; font-size: 0.85rem; }
+    .check-reason { color: var(--text-dim); font-size: 0.8rem; margin-top: 0.25rem; }
+    .check-evidence { color: var(--text-dim); font-size: 0.75rem; margin-top: 0.25rem; font-style: italic; }
+    .ai-tag { color: var(--purple); font-size: 0.7rem; margin-left: 0.5rem; }
+
+    .summary-bar {
+      display: flex;
+      gap: 1.5rem;
+      padding: 1rem;
+      background: var(--bg);
+      border-radius: 4px;
+      margin-bottom: 1rem;
+      justify-content: center;
+    }
+
+    .summary-item { text-align: center; }
+    .summary-number { font-size: 1.5rem; font-weight: bold; }
+    .summary-label { font-size: 0.7rem; color: var(--text-dim); text-transform: uppercase; }
+
+    .spinner {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 2px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin-right: 0.5rem;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .hidden { display: none; }
+
+    .overall-status {
+      text-align: center;
+      padding: 1rem;
+      font-size: 1.2rem;
+      font-weight: bold;
+      border-radius: 4px;
+      margin-bottom: 1rem;
+    }
+
+    .overall-pass { background: rgba(63,185,80,0.1); color: var(--green); }
+    .overall-fail { background: rgba(248,81,73,0.1); color: var(--red); }
+
+    .health { font-size: 0.75rem; color: var(--text-dim); text-align: center; margin-top: 2rem; }
+    .health .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 4px; }
+    .dot-green { background: var(--green); }
+    .dot-red { background: var(--red); }
+
+    .file-input-wrapper {
+      position: relative;
+      display: inline-block;
+    }
+
+    .file-input-wrapper input[type="file"] {
+      display: none;
+    }
+
+    .file-label {
+      display: inline-block;
+      padding: 0.6rem 1rem;
+      background: var(--bg);
+      border: 1px dashed var(--border);
+      border-radius: 4px;
+      cursor: pointer;
+      color: var(--text-dim);
+      font-size: 0.85rem;
+    }
+
+    .file-label:hover { border-color: var(--accent); }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <pre class="logo">
+ ╔═╗╔═╗╦═╗╔╗╔╔═╗╦  ╦╦ ╦╔═╗
+ ║  ║ ║╠╦╝║║║║╣ ║  ║║ ║╚═╗
+ ╚═╝╚═╝╩╚═╝╚╝╚═╝╩═╝╩╚═╝╚═╝
+    </pre>
+    <div class="subtitle">
+      <strong>CORNELIUS</strong><br>
+      Hack Club YSWS Submission Reviewer
+    </div>
+
+    <!-- Single Review -->
+    <div class="panel">
+      <h2>Review Repository</h2>
+      <div class="input-row">
+        <input type="text" id="repoUrl" placeholder="https://github.com/owner/repo">
+        <select id="preset">
+          <option value="default">Default</option>
+          <option value="hardware-default">Hardware</option>
+          <option value="blueprint">Blueprint</option>
+        </select>
+        <button id="reviewBtn" onclick="doReview()">Review</button>
+      </div>
+    </div>
+
+    <!-- Batch Review -->
+    <div class="panel">
+      <h2>Batch Review</h2>
+      <div class="input-row">
+        <div class="file-input-wrapper">
+          <label class="file-label" for="csvFile" id="csvLabel">Choose CSV file...</label>
+          <input type="file" id="csvFile" accept=".csv" onchange="updateFileLabel(this)">
+        </div>
+        <button onclick="doBatch()">Upload & Review</button>
+      </div>
+    </div>
+
+    <!-- Loading -->
+    <div id="loading" class="panel hidden">
+      <div style="text-align:center; padding: 1rem;">
+        <span class="spinner"></span>
+        <span id="loadingText">Scanning repository...</span>
+      </div>
+    </div>
+
+    <!-- Results -->
+    <div id="results" class="hidden">
+      <div id="overallStatus" class="overall-status"></div>
+
+      <div class="summary-bar" id="summaryBar"></div>
+
+      <div class="panel">
+        <h2>Check Results</h2>
+        <div id="checkList"></div>
+      </div>
+
+      <div id="aiPanel" class="panel hidden">
+        <h2>AI Summary</h2>
+        <p id="aiSummary" style="color: var(--text-dim); font-size: 0.85rem;"></p>
+        <div id="fixes" style="margin-top: 0.75rem;"></div>
+      </div>
+    </div>
+
+    <div class="health" id="health"></div>
+  </div>
+
+  <script>
+    // Check health on load
+    fetch('/api/health').then(r => r.json()).then(h => {
+      const gh = h.github ? '<span class="dot dot-green"></span>GitHub' : '<span class="dot dot-red"></span>GitHub';
+      const ai = h.ai ? '<span class="dot dot-green"></span>AI' : '<span class="dot dot-red"></span>AI';
+      document.getElementById('health').innerHTML = `${gh} &nbsp; ${ai} &nbsp; v${h.version}`;
+    }).catch(() => {
+      document.getElementById('health').innerHTML = '<span class="dot dot-red"></span>Server offline';
+    });
+
+    function updateFileLabel(input) {
+      const label = document.getElementById('csvLabel');
+      label.textContent = input.files[0]?.name || 'Choose CSV file...';
+    }
+
+    async function doReview() {
+      const url = document.getElementById('repoUrl').value.trim();
+      const preset = document.getElementById('preset').value;
+      if (!url) return;
+
+      document.getElementById('loading').classList.remove('hidden');
+      document.getElementById('results').classList.add('hidden');
+      document.getElementById('loadingText').textContent = 'Scanning repository...';
+      document.getElementById('reviewBtn').disabled = true;
+
+      try {
+        const res = await fetch('/api/review', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ url, preset })
+        });
+        const data = await res.json();
+        showResults(data);
+      } catch (err) {
+        alert('Review failed: ' + err.message);
+      } finally {
+        document.getElementById('loading').classList.add('hidden');
+        document.getElementById('reviewBtn').disabled = false;
+      }
+    }
+
+    async function doBatch() {
+      const input = document.getElementById('csvFile');
+      if (!input.files[0]) return;
+
+      const form = new FormData();
+      form.append('csv', input.files[0]);
+
+      document.getElementById('loading').classList.remove('hidden');
+      document.getElementById('loadingText').textContent = 'Processing batch...';
+
+      try {
+        const res = await fetch('/api/batch', { method: 'POST', body: form });
+        const { jobId } = await res.json();
+
+        // Poll for results
+        const poll = setInterval(async () => {
+          const r = await fetch(`/api/batch/${jobId}`);
+          const job = await r.json();
+          document.getElementById('loadingText').textContent =
+            `Processing... ${job.completed}/${job.total}`;
+
+          if (job.status === 'complete' || job.status === 'error') {
+            clearInterval(poll);
+            document.getElementById('loading').classList.add('hidden');
+            if (job.results.length > 0) {
+              alert(`Batch complete! ${job.results.length} repos reviewed.`);
+            }
+          }
+        }, 2000);
+      } catch (err) {
+        document.getElementById('loading').classList.add('hidden');
+        alert('Batch failed: ' + err.message);
+      }
+    }
+
+    function showResults(data) {
+      document.getElementById('results').classList.remove('hidden');
+
+      // Overall status
+      const statusEl = document.getElementById('overallStatus');
+      statusEl.className = 'overall-status ' + (data.overallPass ? 'overall-pass' : 'overall-fail');
+      statusEl.textContent = data.overallPass ? 'PASSED' : 'FAILED';
+
+      // Summary bar
+      const checks = data.checkResults || [];
+      const counts = {
+        pass: checks.filter(c => c.status === 'pass').length,
+        fail: checks.filter(c => c.status === 'fail' || c.status === 'error').length,
+        warn: checks.filter(c => c.status === 'warning').length,
+        skip: checks.filter(c => c.status === 'skipped').length,
+      };
+
+      document.getElementById('summaryBar').innerHTML = `
+        <div class="summary-item"><div class="summary-number" style="color:var(--green)">${counts.pass}</div><div class="summary-label">Passed</div></div>
+        <div class="summary-item"><div class="summary-number" style="color:var(--red)">${counts.fail}</div><div class="summary-label">Failed</div></div>
+        <div class="summary-item"><div class="summary-number" style="color:var(--yellow)">${counts.warn}</div><div class="summary-label">Warnings</div></div>
+        <div class="summary-item"><div class="summary-number" style="color:var(--text-dim)">${counts.skip}</div><div class="summary-label">Skipped</div></div>
+      `;
+
+      // Check list
+      const listEl = document.getElementById('checkList');
+      listEl.innerHTML = checks.map(c => `
+        <div class="check-item">
+          <span class="status-badge status-${c.status}">${c.status}</span>
+          <div class="check-info">
+            <div class="check-name">
+              ${c.checkName}
+              ${c.required ? '<span style="color:var(--text-dim);font-size:0.7rem">(required)</span>' : '<span style="color:var(--text-dim);font-size:0.7rem">(optional)</span>'}
+              ${c.aiUsed ? '<span class="ai-tag">[AI]</span>' : ''}
+            </div>
+            <div class="check-reason">${c.reason}</div>
+            ${c.evidence.length > 0 ? '<div class="check-evidence">' + c.evidence.slice(0, 3).join(' · ') + '</div>' : ''}
+          </div>
+        </div>
+      `).join('');
+
+      // AI panel
+      const aiPanel = document.getElementById('aiPanel');
+      if (data.aiSummary) {
+        aiPanel.classList.remove('hidden');
+        document.getElementById('aiSummary').textContent = data.aiSummary;
+        if (data.suggestedFixes?.length) {
+          document.getElementById('fixes').innerHTML =
+            data.suggestedFixes.map(f => `<div style="color:var(--yellow);font-size:0.8rem;">→ ${f}</div>`).join('');
+        }
+      } else {
+        aiPanel.classList.add('hidden');
+      }
+    }
+
+    // Enter to submit
+    document.getElementById('repoUrl').addEventListener('keydown', e => {
+      if (e.key === 'Enter') doReview();
+    });
+  </script>
+</body>
+</html>

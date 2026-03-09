@@ -1,0 +1,41 @@
+{
+  "name": "Blueprint",
+  "projectType": "hardware",
+  "checks": {
+    "github_link_works": {
+      "enabled": true,
+      "required": true
+    },
+    "readme_present": {
+      "enabled": true,
+      "required": true
+    },
+    "readme_quality": {
+      "enabled": true,
+      "required": true,
+      "severity": "fail"
+    },
+    "readme_has_project_image": {
+      "enabled": true,
+      "required": true,
+      "minimum_image_count": 1
+    },
+    "three_d_files_present": {
+      "enabled": true,
+      "required": true,
+      "allowed_extensions": [".stl", ".step", ".stp", ".3mf", ".f3d", ".fcstd", ".scad"],
+      "minimum_file_count": 1
+    },
+    "pcb_files_present": {
+      "enabled": true,
+      "required": true,
+      "allowed_ecad_tools": ["kicad", "easyeda", "eagle", "altium"],
+      "require_source_design_files": true
+    },
+    "bom_present_if_required": {
+      "enabled": true,
+      "required": true,
+      "minimum_columns": ["part", "quantity"]
+    }
+  }
+}
