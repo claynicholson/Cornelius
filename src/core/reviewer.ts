@@ -5,11 +5,18 @@ import { parseGitHubUrl } from "../github/parser.js";
 import { createChecks } from "../checks/index.js";
 import { getCheckConfig, loadPreset } from "./preset.js";
 
+export interface HourContext {
+  hoursReported?: number;
+  journalCount?: number;
+  journal?: string;
+}
+
 export interface ReviewOptions {
   ghProxyApiKey?: string;
   anthropicApiKey?: string;
   preset?: string;
   presetConfig?: PresetConfig;
+  hourContext?: HourContext;
 }
 
 export async function reviewRepository(
@@ -112,6 +119,8 @@ export async function reviewRepository(
 
   for (const check of checks) {
     const config = getCheckConfig(preset, check.id);
+    // Inject project type so AI checks can adapt their prompts
+    config.projectType = preset.projectType || "hardware";
 
     if (!config.enabled) {
       results.push({
@@ -165,7 +174,7 @@ export async function reviewRepository(
         summary: string;
         fixes: string[];
       }>(
-        `Based on these review results for a hardware project repository, provide a brief summary and any suggested fixes.
+        `Based on these review results for a ${preset.projectType || "hardware"} project repository, provide a brief summary and any suggested fixes. This is a ${preset.projectType || "hardware"} project — frame your feedback accordingly.
 
 Return JSON: {"summary": "brief summary", "fixes": ["fix1", "fix2"]}`,
         JSON.stringify(results, null, 2)
@@ -185,6 +194,90 @@ Return JSON: {"summary": "brief summary", "fixes": ["fix1", "fix2"]}`,
       ? confidenceScores.reduce((a, b) => a + b, 0) / confidenceScores.length
       : 0;
 
+  // Generate hour estimate and justification
+  let hourEstimate: number | undefined;
+  let hourJustification: string | undefined;
+
+  if (claude) {
+    try {
+      const hourCtx = options.hourContext || {};
+      const hasHourData = hourCtx.hoursReported != null || hourCtx.journal;
+
+      const projectType = preset.projectType || "hardware";
+      const isSoftware = projectType === "software";
+
+      const projectInfo = {
+        repoUrl: url,
+        fileCount: context.tree.length,
+        has3dFiles: results.find((r) => r.checkName === "three_d_files_present")?.status === "pass",
+        hasPcbFiles: results.find((r) => r.checkName === "pcb_files_present")?.status === "pass",
+        hasBom: results.find((r) => r.checkName === "bom_present_if_required")?.status === "pass",
+        hasSourceCode: results.find((r) => r.checkName === "source_code_present")?.status === "pass",
+        codeQuality: results.find((r) => r.checkName === "code_quality_overview")?.status,
+        readmeQuality: results.find((r) => r.checkName === "readme_quality")?.status,
+        overallPass,
+        hoursReported: hourCtx.hoursReported,
+        journalCount: hourCtx.journalCount,
+        journal: hourCtx.journal,
+      };
+
+      const hardwareGuidelines = `Guidelines for hour estimation (hardware projects):
+- A basic keyboard PCB project typically takes 15-20 hours
+- A simple case-only or single-component project is 5-8 hours
+- Complex custom projects (phones, robots, custom gear systems) can be 30-80 hours
+- Setting up a git repo should be 0.5 hours max
+- "Thinking about an idea" is not verifiable work
+- Spray painting / simple finishing tasks are 0.5-1 hour`;
+
+      const softwareGuidelines = `Guidelines for hour estimation (software projects):
+- A simple static website or single-page app is 5-10 hours
+- A basic CRUD app or bot with a few features is 10-20 hours
+- A full-stack app with auth, database, and multiple features is 20-50 hours
+- Complex projects (real-time apps, game engines, compilers) can be 40-100 hours
+- Using a framework scaffold or starter template counts for very little (0.5-1 hour)
+- Copy-pasting tutorial code is not verifiable work
+- Setting up a git repo should be 0.5 hours max`;
+
+      const hourPrompt = `You are a reviewer for Hack Club's YSWS program. You need to estimate how many hours this ${projectType} project actually took and write a human-sounding justification.
+
+${hasHourData ? `The user self-reported ${hourCtx.hoursReported ?? "unknown"} hours across ${hourCtx.journalCount ?? "unknown"} journal entries.` : "No self-reported hours or journal were provided."}
+
+${hourCtx.journal ? `Their journal content:\n${hourCtx.journal}` : ""}
+
+Context about the project repository:
+- Project type: ${projectType}
+- Total files: ${projectInfo.fileCount}
+${isSoftware ? `- Has source code: ${projectInfo.hasSourceCode}
+- Code quality: ${projectInfo.codeQuality}` : `- Has 3D/CAD files: ${projectInfo.has3dFiles}
+- Has PCB design files: ${projectInfo.hasPcbFiles}
+- Has BOM: ${projectInfo.hasBom}`}
+- README quality: ${projectInfo.readmeQuality}
+- Overall review: ${overallPass ? "passed" : "failed"}
+
+${isSoftware ? softwareGuidelines : hardwareGuidelines}
+
+General rules:
+- If journal entries are sparse or vague, deflate more aggressively
+- If journal entries are detailed and show real iteration, deflate less
+- Programming hours without detail should be deflated
+- Look for signs of inflation: large hour counts with little detail, simple tasks reported as many hours
+
+Write a natural, human-sounding justification (2-4 sentences) like a real reviewer would. Be direct and specific about why you're giving those hours. Reference specific journal entries or project aspects if available. Match the tone of these example justifications - casual, honest, sometimes blunt.
+
+Return JSON: {"hourEstimate": <number>, "justification": "<string>"}`;
+
+      const hourData = await claude.askStructured<{
+        hourEstimate: number;
+        justification: string;
+      }>(hourPrompt, JSON.stringify(results, null, 2));
+
+      hourEstimate = hourData.hourEstimate;
+      hourJustification = hourData.justification;
+    } catch {
+      // Hour estimation is optional
+    }
+  }
+
   return {
     githubUrl: url,
     status: overallStatus,
@@ -195,5 +288,15 @@ Return JSON: {"summary": "brief summary", "fixes": ["fix1", "fix2"]}`,
     aiSummary,
     suggestedFixes,
     confidenceScore: Math.round(avgConfidence * 100) / 100,
+    hourEstimate,
+    hourJustification,
+    apiCost: claude
+      ? {
+          inputTokens: claude.totalUsage.inputTokens,
+          outputTokens: claude.totalUsage.outputTokens,
+          totalCost: Math.round(claude.totalUsage.cost * 1_000_000) / 1_000_000,
+          callCount: claude.callCount,
+        }
+      : undefined,
   };
 }

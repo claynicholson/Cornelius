@@ -13,6 +13,8 @@ export function writeCsv(results: BatchResult[], outputPath: string): void {
     warnings: r.warnings.join("; "),
     review_summary: r.reviewSummary,
     confidence_score: r.confidenceScore,
+    hour_estimate: r.hourEstimate ?? "",
+    hour_justification: r.hourJustification ?? "",
   }));
 
   const csv = stringify(rows, { header: true });

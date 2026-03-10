@@ -20,6 +20,14 @@ export interface ReviewResult {
   submissionId?: string;
   participantName?: string;
   confidenceScore: number;
+  hourEstimate?: number;
+  hourJustification?: string;
+  apiCost?: {
+    inputTokens: number;
+    outputTokens: number;
+    totalCost: number; // USD
+    callCount: number;
+  };
 }
 
 export interface TreeEntry {
@@ -67,6 +75,9 @@ export interface BatchRow {
   participant_name?: string;
   email?: string;
   notes?: string;
+  hours_reported?: number;
+  journal_count?: number;
+  journal?: string;
 }
 
 export interface BatchResult {
@@ -79,5 +90,17 @@ export interface BatchResult {
   warnings: string[];
   reviewSummary: string;
   confidenceScore: number;
+  hourEstimate?: number;
+  hourJustification?: string;
   result: ReviewResult;
+}
+
+export interface UserSession {
+  id: string;
+  email: string;
+  name?: string;
+  avatar?: string;
+  ghApiToken?: string;
+  anthropicApiKey?: string;
+  customPresets: Record<string, PresetConfig>;
 }

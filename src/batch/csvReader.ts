@@ -18,6 +18,8 @@ export async function readCsv(filePath: string): Promise<BatchRow[]> {
       .on("data", (row: Record<string, string>) => {
         const githubUrl = row.github_url || row.url || row.GitHub_URL || row.repo;
         if (githubUrl) {
+          const hoursRaw = row.hours_reported || row.hours || row.time_reported || row.total_hours;
+          const journalCountRaw = row.journal_count || row.journal_entries || row.num_journals;
           rows.push({
             github_url: githubUrl,
             project_type: row.project_type || row.type || "hardware",
@@ -26,6 +28,9 @@ export async function readCsv(filePath: string): Promise<BatchRow[]> {
             participant_name: row.participant_name || row.name,
             email: row.email,
             notes: row.notes,
+            hours_reported: hoursRaw ? parseFloat(hoursRaw) : undefined,
+            journal_count: journalCountRaw ? parseInt(journalCountRaw, 10) : undefined,
+            journal: row.journal || row.journal_text || row.journal_content,
           });
         }
       })

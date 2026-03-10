@@ -12,6 +12,15 @@ const DEFAULT_3D_EXTENSIONS = [
   ".scad",
 ];
 
+const PCB_EXTENSIONS = [
+  ".kicad_pro", ".kicad_sch", ".kicad_pcb",
+  ".epro", ".eprj",
+  ".sch", ".brd",
+  ".prjpcb", ".schdoc", ".pcbdoc",
+  ".gbr", ".ger", ".gtl", ".gbl", ".gts", ".gbs",
+  ".gto", ".gbo", ".gtp", ".gbp", ".gm1", ".drl",
+];
+
 export class CadFilesCheck extends BaseCheck {
   id = "three_d_files_present";
   name = "3D Design Files Present";
@@ -24,6 +33,16 @@ export class CadFilesCheck extends BaseCheck {
     const found = this.findFiles(context.tree, extensions);
 
     if (found.length === 0) {
+      // PCB-only projects shouldn't be failed for missing 3D files
+      const pcbFiles = this.findFiles(context.tree, PCB_EXTENSIONS);
+      if (pcbFiles.length > 0) {
+        return this.pass(
+          "PCB-only project detected — 3D design files not expected",
+          [],
+          config,
+        );
+      }
+
       return this.fail(
         `No 3D design files found (looked for: ${extensions.join(", ")})`,
         [],

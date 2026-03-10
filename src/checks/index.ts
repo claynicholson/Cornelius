@@ -7,6 +7,11 @@ import { ReadmeQualityCheck } from "./readmeQuality.js";
 import { CadFilesCheck } from "./cadFiles.js";
 import { PcbFilesCheck } from "./pcbFiles.js";
 import { BomPresentCheck } from "./bomPresent.js";
+import { SourceCodeCheck } from "./sourceCode.js";
+import { GitignoreCheck } from "./gitignorePresent.js";
+import { PackageManagerCheck } from "./packageManager.js";
+import { LicensePresentCheck } from "./licensePresent.js";
+import { CodeQualityCheck } from "./codeQuality.js";
 
 export function createChecks(claude?: ClaudeClient): Check[] {
   return [
@@ -17,6 +22,11 @@ export function createChecks(claude?: ClaudeClient): Check[] {
     new CadFilesCheck(),
     new PcbFilesCheck(),
     new BomPresentCheck(),
+    new SourceCodeCheck(),
+    new GitignoreCheck(),
+    new PackageManagerCheck(),
+    new LicensePresentCheck(),
+    new CodeQualityCheck(claude),
   ];
 }
 
@@ -28,4 +38,9 @@ export {
   CadFilesCheck,
   PcbFilesCheck,
   BomPresentCheck,
+  SourceCodeCheck,
+  GitignoreCheck,
+  PackageManagerCheck,
+  LicensePresentCheck,
+  CodeQualityCheck,
 };

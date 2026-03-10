@@ -72,7 +72,9 @@
       margin-bottom: 1rem;
     }
 
-    input[type="text"], select {
+    .input-row:last-child { margin-bottom: 0; }
+
+    input[type="text"], input[type="password"], input[type="number"], select {
       flex: 1;
       padding: 0.6rem 1rem;
       background: var(--bg);
@@ -83,7 +85,7 @@
       font-size: 0.85rem;
     }
 
-    input:focus, select:focus {
+    input:focus, select:focus, textarea:focus {
       outline: none;
       border-color: var(--accent);
     }
@@ -99,10 +101,28 @@
       cursor: pointer;
       font-size: 0.85rem;
       transition: opacity 0.2s;
+      white-space: nowrap;
     }
 
     button:hover { opacity: 0.85; }
     button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .btn-secondary {
+      background: var(--surface);
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+
+    .btn-danger {
+      background: rgba(248,81,73,0.15);
+      color: var(--red);
+      border: 1px solid var(--red);
+    }
+
+    .btn-small {
+      padding: 0.3rem 0.8rem;
+      font-size: 0.75rem;
+    }
 
     .status-badge {
       display: inline-block;
@@ -180,15 +200,28 @@
     .dot-green { background: var(--green); }
     .dot-red { background: var(--red); }
 
-    .file-input-wrapper {
-      position: relative;
-      display: inline-block;
+    .cost-bar {
+      display: flex;
+      gap: 1.5rem;
+      padding: 0.75rem 1rem;
+      background: var(--bg);
+      border-radius: 4px;
+      margin-bottom: 1rem;
+      justify-content: center;
+      font-size: 0.8rem;
+      color: var(--text-dim);
     }
-
-    .file-input-wrapper input[type="file"] {
-      display: none;
+    .cost-bar .cost-value { color: var(--accent); font-weight: bold; }
+    .cost-session {
+      text-align: center;
+      font-size: 0.75rem;
+      color: var(--text-dim);
+      margin-top: 0.5rem;
     }
+    .cost-session .cost-value { color: var(--accent); font-weight: bold; }
 
+    .file-input-wrapper { position: relative; display: inline-block; }
+    .file-input-wrapper input[type="file"] { display: none; }
     .file-label {
       display: inline-block;
       padding: 0.6rem 1rem;
@@ -199,8 +232,262 @@
       color: var(--text-dim);
       font-size: 0.85rem;
     }
-
     .file-label:hover { border-color: var(--accent); }
+
+    .hour-panel {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .hour-header { display: flex; align-items: center; gap: 1rem; margin-bottom: 0.75rem; }
+    .hour-estimate { font-size: 1.8rem; font-weight: bold; color: var(--accent); }
+    .hour-estimate-label { font-size: 0.7rem; color: var(--text-dim); text-transform: uppercase; }
+    .hour-justification { color: var(--text-dim); font-size: 0.85rem; line-height: 1.5; font-style: italic; }
+
+    .optional-fields { margin-top: 0.5rem; }
+    .optional-fields summary {
+      color: var(--text-dim);
+      font-size: 0.8rem;
+      cursor: pointer;
+      margin-bottom: 0.5rem;
+    }
+    .optional-fields summary:hover { color: var(--text); }
+
+    textarea {
+      width: 100%;
+      padding: 0.6rem 1rem;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      color: var(--text);
+      font-family: inherit;
+      font-size: 0.85rem;
+      resize: vertical;
+      min-height: 60px;
+    }
+
+    .small-input {
+      width: 100px;
+      padding: 0.6rem 1rem;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      color: var(--text);
+      font-family: inherit;
+      font-size: 0.85rem;
+    }
+
+    .small-input:focus { outline: none; border-color: var(--accent); }
+
+    /* ── Auth & Settings styles ──────────────── */
+    .user-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+      padding: 0.75rem 1rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 0.8rem;
+    }
+
+    .user-info {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .user-avatar {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: var(--accent);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--bg);
+      font-weight: bold;
+      font-size: 0.75rem;
+    }
+
+    .login-panel {
+      text-align: center;
+      padding: 3rem 2rem;
+    }
+
+    .login-panel p {
+      color: var(--text-dim);
+      margin-bottom: 1.5rem;
+      font-size: 0.85rem;
+    }
+
+    .login-btn {
+      padding: 0.8rem 2rem;
+      font-size: 1rem;
+      background: var(--accent);
+      color: var(--bg);
+    }
+
+    .token-field {
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+      margin-bottom: 0.75rem;
+    }
+
+    .token-field label {
+      width: 140px;
+      font-size: 0.8rem;
+      color: var(--text-dim);
+      flex-shrink: 0;
+    }
+
+    .token-field input { flex: 1; }
+
+    .token-hint {
+      font-size: 0.75rem;
+      color: var(--text-dim);
+      padding: 0.25rem 0.5rem;
+      background: var(--bg);
+      border-radius: 3px;
+      border: 1px solid var(--border);
+    }
+
+    .token-saved {
+      color: var(--green);
+      font-size: 0.75rem;
+    }
+
+    /* ── Preset Builder ────────────────────── */
+    .preset-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .preset-chip {
+      padding: 0.4rem 0.8rem;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      font-size: 0.8rem;
+      cursor: pointer;
+      color: var(--text-dim);
+      transition: all 0.2s;
+    }
+
+    .preset-chip:hover { border-color: var(--accent); color: var(--text); }
+    .preset-chip.active { border-color: var(--accent); color: var(--accent); background: rgba(240,192,0,0.1); }
+    .preset-chip .chip-type { font-size: 0.65rem; color: var(--text-dim); margin-left: 0.25rem; }
+
+    .check-config {
+      padding: 0.75rem;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      margin-bottom: 0.5rem;
+      background: var(--bg);
+    }
+
+    .check-config-header {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .check-config-header label {
+      font-size: 0.85rem;
+      font-weight: bold;
+      flex: 1;
+    }
+
+    .check-config-desc {
+      font-size: 0.75rem;
+      color: var(--text-dim);
+      margin-bottom: 0.5rem;
+    }
+
+    .check-config-options {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      font-size: 0.8rem;
+    }
+
+    .check-config-options label {
+      color: var(--text-dim);
+      font-size: 0.75rem;
+    }
+
+    .toggle {
+      position: relative;
+      width: 36px;
+      height: 20px;
+      flex-shrink: 0;
+    }
+
+    .toggle input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .toggle-slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: var(--border);
+      border-radius: 20px;
+      transition: 0.2s;
+    }
+
+    .toggle-slider:before {
+      content: "";
+      position: absolute;
+      height: 14px;
+      width: 14px;
+      left: 3px;
+      bottom: 3px;
+      background: var(--text);
+      border-radius: 50%;
+      transition: 0.2s;
+    }
+
+    .toggle input:checked + .toggle-slider { background: var(--accent); }
+    .toggle input:checked + .toggle-slider:before { transform: translateX(16px); }
+
+    .tabs {
+      display: flex;
+      gap: 0;
+      margin-bottom: 1.5rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .tab {
+      padding: 0.6rem 1.2rem;
+      background: none;
+      border: none;
+      color: var(--text-dim);
+      font-family: inherit;
+      font-size: 0.85rem;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: all 0.2s;
+      font-weight: normal;
+    }
+
+    .tab:hover { color: var(--text); }
+    .tab.active { color: var(--accent); border-bottom-color: var(--accent); font-weight: bold; }
+
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    .inline-flex { display: flex; align-items: center; gap: 0.5rem; }
   </style>
 </head>
 <body>
@@ -215,71 +502,579 @@
       Hack Club YSWS Submission Reviewer
     </div>
 
-    <!-- Single Review -->
-    <div class="panel">
-      <h2>Review Repository</h2>
-      <div class="input-row">
-        <input type="text" id="repoUrl" placeholder="https://github.com/owner/repo">
-        <select id="preset">
-          <option value="default">Default</option>
-          <option value="hardware-default">Hardware</option>
-          <option value="blueprint">Blueprint</option>
-        </select>
-        <button id="reviewBtn" onclick="doReview()">Review</button>
-      </div>
+    <!-- Login Panel (shown when not authenticated) -->
+    <div id="loginPanel" class="panel login-panel hidden">
+      <p>Sign in with your Hack Club account to configure your own API tokens and review presets.</p>
+      <button class="login-btn" onclick="doLogin()">Sign in with Hack Club</button>
     </div>
 
-    <!-- Batch Review -->
-    <div class="panel">
-      <h2>Batch Review</h2>
-      <div class="input-row">
-        <div class="file-input-wrapper">
-          <label class="file-label" for="csvFile" id="csvLabel">Choose CSV file...</label>
-          <input type="file" id="csvFile" accept=".csv" onchange="updateFileLabel(this)">
-        </div>
-        <button onclick="doBatch()">Upload & Review</button>
+    <!-- User Bar (shown when authenticated) -->
+    <div id="userBar" class="user-bar hidden">
+      <div class="user-info">
+        <div class="user-avatar" id="userAvatar">?</div>
+        <span id="userName">User</span>
+        <span style="color:var(--text-dim); font-size:0.75rem" id="userEmail"></span>
       </div>
+      <button class="btn-secondary btn-small" onclick="doLogout()">Sign out</button>
     </div>
 
-    <!-- Loading -->
-    <div id="loading" class="panel hidden">
-      <div style="text-align:center; padding: 1rem;">
-        <span class="spinner"></span>
-        <span id="loadingText">Scanning repository...</span>
-      </div>
+    <!-- Tabs (shown when authenticated) -->
+    <div id="mainTabs" class="tabs hidden">
+      <button class="tab active" data-tab="review" onclick="switchTab('review')">Review</button>
+      <button class="tab" data-tab="settings" onclick="switchTab('settings')">Settings</button>
+      <button class="tab" data-tab="presets" onclick="switchTab('presets')">Presets</button>
     </div>
 
-    <!-- Results -->
-    <div id="results" class="hidden">
-      <div id="overallStatus" class="overall-status"></div>
-
-      <div class="summary-bar" id="summaryBar"></div>
-
+    <!-- Tab: Review ──────────────────────────── -->
+    <div id="tab-review" class="tab-content active">
+      <!-- Single Review -->
       <div class="panel">
-        <h2>Check Results</h2>
-        <div id="checkList"></div>
+        <h2>Review Repository</h2>
+        <div class="input-row">
+          <input type="text" id="repoUrl" placeholder="https://github.com/owner/repo">
+          <select id="preset"></select>
+          <button id="reviewBtn" onclick="doReview()">Review</button>
+        </div>
+        <details class="optional-fields">
+          <summary>Hour/Journal Data (optional)</summary>
+          <div class="input-row" style="margin-top: 0.5rem;">
+            <input type="number" class="small-input" id="hoursReported" placeholder="Hours" step="0.1" min="0">
+            <input type="number" class="small-input" id="journalCount" placeholder="# Journals" step="1" min="0">
+          </div>
+          <textarea id="journalText" placeholder="Paste journal entries here..."></textarea>
+        </details>
       </div>
 
-      <div id="aiPanel" class="panel hidden">
-        <h2>AI Summary</h2>
-        <p id="aiSummary" style="color: var(--text-dim); font-size: 0.85rem;"></p>
-        <div id="fixes" style="margin-top: 0.75rem;"></div>
+      <!-- Batch Review -->
+      <div class="panel">
+        <h2>Batch Review</h2>
+        <div class="input-row">
+          <div class="file-input-wrapper">
+            <label class="file-label" for="csvFile" id="csvLabel">Choose CSV file...</label>
+            <input type="file" id="csvFile" accept=".csv" onchange="updateFileLabel(this)">
+          </div>
+          <button onclick="doBatch()">Upload & Review</button>
+        </div>
       </div>
+
+      <!-- Loading -->
+      <div id="loading" class="panel hidden">
+        <div style="text-align:center; padding: 1rem;">
+          <span class="spinner"></span>
+          <span id="loadingText">Scanning repository...</span>
+        </div>
+      </div>
+
+      <!-- Results -->
+      <div id="results" class="hidden">
+        <div id="overallStatus" class="overall-status"></div>
+        <div class="summary-bar" id="summaryBar"></div>
+        <div id="costPanel" class="hidden">
+          <div class="cost-bar" id="costBar"></div>
+          <div class="cost-session" id="costSession"></div>
+        </div>
+
+        <div id="hourPanel" class="panel hidden">
+          <h2>Hour Estimate</h2>
+          <div class="hour-panel">
+            <div class="hour-header">
+              <div>
+                <div class="hour-estimate" id="hourEstimate">--</div>
+                <div class="hour-estimate-label">Estimated Hours</div>
+              </div>
+            </div>
+            <div class="hour-justification" id="hourJustification"></div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <h2>Check Results</h2>
+          <div id="checkList"></div>
+        </div>
+
+        <div id="aiPanel" class="panel hidden">
+          <h2>AI Summary</h2>
+          <p id="aiSummary" style="color: var(--text-dim); font-size: 0.85rem;"></p>
+          <div id="fixes" style="margin-top: 0.75rem;"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab: Settings ────────────────────────── -->
+    <div id="tab-settings" class="tab-content">
+      <div class="panel">
+        <h2>API Tokens</h2>
+        <p style="color:var(--text-dim); font-size:0.8rem; margin-bottom:1rem;">
+          Your tokens are stored server-side in your session. They are used when running reviews instead of the server defaults.
+        </p>
+
+        <div class="token-field">
+          <label>GitHub API Token</label>
+          <input type="password" id="ghTokenInput" placeholder="ghp_xxxxxxxxxxxx">
+          <span id="ghTokenStatus"></span>
+        </div>
+        <div class="token-field">
+          <label>Claude AI Token</label>
+          <input type="password" id="aiTokenInput" placeholder="sk-ant-xxxxxxxxxxxx">
+          <span id="aiTokenStatus"></span>
+        </div>
+
+        <div style="margin-top:1rem; display:flex; gap:0.5rem;">
+          <button onclick="saveTokens()">Save Tokens</button>
+          <button class="btn-secondary" onclick="clearTokens()">Clear All</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab: Presets ─────────────────────────── -->
+    <div id="tab-presets" class="tab-content">
+      <div class="panel">
+        <h2>Review Presets</h2>
+        <p style="color:var(--text-dim); font-size:0.8rem; margin-bottom:1rem;">
+          Create custom review configurations. Choose which checks to run and how strict they should be.
+        </p>
+
+        <div style="margin-bottom:1rem;">
+          <span style="font-size:0.75rem; color:var(--text-dim); text-transform:uppercase; letter-spacing:1px;">Your Presets</span>
+          <div class="preset-list" id="presetList"></div>
+          <button class="btn-small" onclick="newPreset()">+ New Preset</button>
+        </div>
+      </div>
+
+      <!-- Preset Editor -->
+      <div id="presetEditor" class="panel hidden">
+        <h2 id="presetEditorTitle">New Preset</h2>
+        <div class="input-row">
+          <input type="text" id="presetName" placeholder="Preset name (e.g. My Hardware Review)">
+          <select id="presetType">
+            <option value="hardware">Hardware</option>
+            <option value="software">Software</option>
+            <option value="custom">Custom</option>
+          </select>
+        </div>
+
+        <div style="margin-top:0.5rem; margin-bottom:0.75rem;">
+          <button class="btn-small btn-secondary" onclick="loadFromBuiltIn()">Copy from built-in...</button>
+        </div>
+
+        <div id="checkConfigs"></div>
+
+        <div style="margin-top:1rem; display:flex; gap:0.5rem;">
+          <button onclick="savePreset()">Save Preset</button>
+          <button class="btn-secondary" onclick="cancelPreset()">Cancel</button>
+          <button class="btn-danger btn-small" id="deletePresetBtn" onclick="deletePreset()" style="margin-left:auto;">Delete</button>
+        </div>
+      </div>
+    </div>
+
+    <div style="text-align:center; margin-top: 1.5rem;">
+      <a href="/docs" style="color:var(--accent); font-size:0.8rem; text-decoration:none; border-bottom: 1px solid var(--border); padding-bottom: 2px;">API Documentation</a>
     </div>
 
     <div class="health" id="health"></div>
   </div>
 
   <script>
-    // Check health on load
-    fetch('/api/health').then(r => r.json()).then(h => {
-      const gh = h.github ? '<span class="dot dot-green"></span>GitHub' : '<span class="dot dot-red"></span>GitHub';
-      const ai = h.ai ? '<span class="dot dot-green"></span>AI' : '<span class="dot dot-red"></span>AI';
-      document.getElementById('health').innerHTML = `${gh} &nbsp; ${ai} &nbsp; v${h.version}`;
-    }).catch(() => {
-      document.getElementById('health').innerHTML = '<span class="dot dot-red"></span>Server offline';
-    });
+    // ── State ──────────────────────────────────
+    let currentUser = null;
+    let allChecks = [];
+    let allPresets = { builtIn: [], custom: [] };
+    let editingPresetKey = null;
+    let sessionTotalCost = 0;
+    let sessionCallCount = 0;
 
+    // ── Init ──────────────────────────────────
+    async function init() {
+      try {
+        const [authRes, healthRes, checksRes] = await Promise.all([
+          fetch('/auth/me'),
+          fetch('/api/health'),
+          fetch('/api/checks'),
+        ]);
+
+        // Health
+        if (healthRes.ok) {
+          const h = await healthRes.json();
+          const gh = h.github ? '<span class="dot dot-green"></span>GitHub' : '<span class="dot dot-red"></span>GitHub';
+          const ai = h.ai ? '<span class="dot dot-green"></span>AI' : '<span class="dot dot-red"></span>AI';
+          document.getElementById('health').innerHTML = `${gh} &nbsp; ${ai} &nbsp; v${h.version}`;
+        }
+
+        // Checks metadata
+        if (checksRes.ok) {
+          const data = await checksRes.json();
+          allChecks = data.checks;
+        }
+
+        // Auth
+        if (authRes.ok) {
+          currentUser = await authRes.json();
+          showAuthenticatedUI();
+        } else {
+          showLoginUI();
+        }
+      } catch {
+        showLoginUI();
+        document.getElementById('health').innerHTML = '<span class="dot dot-red"></span>Server offline';
+      }
+    }
+
+    // ── Auth UI ───────────────────────────────
+    function showLoginUI() {
+      document.getElementById('loginPanel').classList.remove('hidden');
+      document.getElementById('userBar').classList.add('hidden');
+      document.getElementById('mainTabs').classList.add('hidden');
+      // Still show the review tab for non-authenticated users
+      document.getElementById('tab-review').classList.add('active');
+      document.getElementById('tab-review').style.display = 'block';
+      loadPresetSelector();
+    }
+
+    function showAuthenticatedUI() {
+      document.getElementById('loginPanel').classList.add('hidden');
+      document.getElementById('userBar').classList.remove('hidden');
+      document.getElementById('mainTabs').classList.remove('hidden');
+
+      // User info
+      const initial = (currentUser.name || currentUser.email || '?')[0].toUpperCase();
+      document.getElementById('userAvatar').textContent = initial;
+      document.getElementById('userName').textContent = currentUser.name || 'User';
+      document.getElementById('userEmail').textContent = currentUser.email || '';
+
+      loadSettings();
+      loadPresets();
+      loadPresetSelector();
+    }
+
+    function doLogin() {
+      window.location.href = '/auth/login';
+    }
+
+    function doLogout() {
+      window.location.href = '/auth/logout';
+    }
+
+    // ── Tab switching ─────────────────────────
+    function switchTab(tab) {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(t => {
+        t.classList.remove('active');
+        t.style.display = 'none';
+      });
+      document.querySelector(`.tab[data-tab="${tab}"]`).classList.add('active');
+      const content = document.getElementById(`tab-${tab}`);
+      content.classList.add('active');
+      content.style.display = 'block';
+
+      if (tab === 'presets') loadPresets();
+      if (tab === 'settings') loadSettings();
+    }
+
+    // ── Settings ──────────────────────────────
+    async function loadSettings() {
+      if (!currentUser) return;
+      try {
+        const res = await fetch('/api/settings');
+        if (!res.ok) return;
+        const data = await res.json();
+
+        document.getElementById('ghTokenStatus').innerHTML = data.hasGhToken
+          ? `<span class="token-saved">Saved ${data.ghApiTokenHint}</span>`
+          : '';
+        document.getElementById('aiTokenStatus').innerHTML = data.hasAnthropicKey
+          ? `<span class="token-saved">Saved ${data.anthropicApiKeyHint}</span>`
+          : '';
+      } catch {}
+    }
+
+    async function saveTokens() {
+      const ghApiToken = document.getElementById('ghTokenInput').value.trim();
+      const anthropicApiKey = document.getElementById('aiTokenInput').value.trim();
+
+      const body = {};
+      if (ghApiToken) body.ghApiToken = ghApiToken;
+      if (anthropicApiKey) body.anthropicApiKey = anthropicApiKey;
+
+      if (Object.keys(body).length === 0) return;
+
+      try {
+        const res = await fetch('/api/settings', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+        });
+        if (res.ok) {
+          document.getElementById('ghTokenInput').value = '';
+          document.getElementById('aiTokenInput').value = '';
+          loadSettings();
+          // Refresh health to reflect new token status
+          fetch('/api/health').then(r => r.json()).then(h => {
+            const gh = h.github ? '<span class="dot dot-green"></span>GitHub' : '<span class="dot dot-red"></span>GitHub';
+            const ai = h.ai ? '<span class="dot dot-green"></span>AI' : '<span class="dot dot-red"></span>AI';
+            document.getElementById('health').innerHTML = `${gh} &nbsp; ${ai} &nbsp; v${h.version}`;
+          });
+        }
+      } catch {}
+    }
+
+    async function clearTokens() {
+      try {
+        await fetch('/api/settings', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ghApiToken: '', anthropicApiKey: '' }),
+        });
+        loadSettings();
+      } catch {}
+    }
+
+    // ── Presets ───────────────────────────────
+    async function loadPresets() {
+      try {
+        const res = await fetch('/api/presets');
+        if (!res.ok) return;
+        allPresets = await res.json();
+        renderPresetList();
+        loadPresetSelector();
+      } catch {}
+    }
+
+    function renderPresetList() {
+      const el = document.getElementById('presetList');
+      if (allPresets.custom.length === 0) {
+        el.innerHTML = '<span style="color:var(--text-dim); font-size:0.8rem;">No custom presets yet.</span>';
+        return;
+      }
+
+      el.innerHTML = allPresets.custom.map(name => `
+        <span class="preset-chip" onclick="editPreset('${name}')">${name} <span class="chip-type">custom</span></span>
+      `).join('');
+    }
+
+    async function loadPresetSelector() {
+      const select = document.getElementById('preset');
+      if (!select) return;
+
+      // Start with built-in presets
+      let html = '';
+
+      // Try to fetch presets list
+      try {
+        const res = await fetch('/api/presets');
+        if (res.ok) {
+          const data = await res.json();
+          allPresets = data;
+
+          if (data.builtIn.length > 0) {
+            html += '<optgroup label="Built-in">';
+            data.builtIn.forEach(p => {
+              const label = p.charAt(0).toUpperCase() + p.slice(1).replace(/-/g, ' ');
+              html += `<option value="${p}">${label}</option>`;
+            });
+            html += '</optgroup>';
+          }
+
+          if (data.custom.length > 0) {
+            html += '<optgroup label="Custom">';
+            data.custom.forEach(p => {
+              html += `<option value="${p}">${p}</option>`;
+            });
+            html += '</optgroup>';
+          }
+        }
+      } catch {}
+
+      if (!html) {
+        html = `
+          <option value="default">Default</option>
+          <option value="hardware-default">Hardware</option>
+          <option value="blueprint">Blueprint</option>
+        `;
+      }
+
+      select.innerHTML = html;
+    }
+
+    // ── Preset Editor ─────────────────────────
+    function newPreset() {
+      editingPresetKey = null;
+      document.getElementById('presetEditorTitle').textContent = 'New Preset';
+      document.getElementById('presetName').value = '';
+      document.getElementById('presetType').value = 'hardware';
+      document.getElementById('deletePresetBtn').classList.add('hidden');
+      renderCheckConfigs({});
+      document.getElementById('presetEditor').classList.remove('hidden');
+    }
+
+    async function editPreset(name) {
+      editingPresetKey = name;
+      document.getElementById('presetEditorTitle').textContent = 'Edit Preset';
+      document.getElementById('deletePresetBtn').classList.remove('hidden');
+
+      try {
+        const res = await fetch(`/api/presets/${name}`);
+        if (!res.ok) return;
+        const data = await res.json();
+        const preset = data.preset;
+
+        document.getElementById('presetName').value = preset.name || name;
+        document.getElementById('presetType').value = preset.projectType || 'hardware';
+        renderCheckConfigs(preset.checks || {});
+        document.getElementById('presetEditor').classList.remove('hidden');
+      } catch {}
+    }
+
+    async function loadFromBuiltIn() {
+      const name = prompt('Enter built-in preset name (default, hardware-default, blueprint):');
+      if (!name) return;
+
+      try {
+        const res = await fetch(`/api/presets/${name.trim()}`);
+        if (!res.ok) { alert('Preset not found'); return; }
+        const data = await res.json();
+        renderCheckConfigs(data.preset.checks || {});
+      } catch {}
+    }
+
+    function renderCheckConfigs(existingChecks) {
+      const container = document.getElementById('checkConfigs');
+      container.innerHTML = allChecks.map(check => {
+        const conf = existingChecks[check.id] || {};
+        const enabled = conf.enabled !== false;
+        const required = conf.required !== false;
+
+        return `
+          <div class="check-config" data-check="${check.id}">
+            <div class="check-config-header">
+              <label class="toggle">
+                <input type="checkbox" data-field="enabled" ${enabled ? 'checked' : ''}>
+                <span class="toggle-slider"></span>
+              </label>
+              <label>${check.name} ${check.type === 'ai' ? '<span class="ai-tag">[AI]</span>' : ''}</label>
+              <div class="inline-flex">
+                <label style="font-size:0.75rem; color:var(--text-dim);">Required</label>
+                <label class="toggle">
+                  <input type="checkbox" data-field="required" ${required ? 'checked' : ''}>
+                  <span class="toggle-slider"></span>
+                </label>
+              </div>
+            </div>
+            <div class="check-config-desc">${check.description}</div>
+            ${check.configOptions.length > 0 ? `
+              <div class="check-config-options">
+                ${check.configOptions.map(opt => {
+                  const val = conf[opt.key] !== undefined ? conf[opt.key] : opt.default;
+                  if (opt.type === 'select') {
+                    return `<div><label>${opt.key}</label><br>
+                      <select data-field="${opt.key}" style="font-size:0.75rem; padding:0.25rem; background:var(--surface); color:var(--text); border:1px solid var(--border); border-radius:3px;">
+                        ${opt.options.map(o => `<option value="${o}" ${val === o ? 'selected' : ''}>${o}</option>`).join('')}
+                      </select></div>`;
+                  } else if (opt.type === 'boolean') {
+                    return `<div class="inline-flex"><label>${opt.key}</label>
+                      <label class="toggle"><input type="checkbox" data-field="${opt.key}" ${val ? 'checked' : ''}><span class="toggle-slider"></span></label></div>`;
+                  } else if (opt.type === 'number') {
+                    return `<div><label>${opt.key}</label><br>
+                      <input type="number" data-field="${opt.key}" value="${val || ''}" style="width:60px; font-size:0.75rem; padding:0.25rem; background:var(--surface); color:var(--text); border:1px solid var(--border); border-radius:3px;"></div>`;
+                  } else {
+                    return `<div><label>${opt.key}</label><br>
+                      <input type="text" data-field="${opt.key}" value="${val || ''}" style="width:200px; font-size:0.75rem; padding:0.25rem; background:var(--surface); color:var(--text); border:1px solid var(--border); border-radius:3px;"></div>`;
+                  }
+                }).join('')}
+              </div>
+            ` : ''}
+          </div>
+        `;
+      }).join('');
+    }
+
+    function gatherPresetData() {
+      const name = document.getElementById('presetName').value.trim();
+      const projectType = document.getElementById('presetType').value;
+      if (!name) { alert('Please enter a preset name'); return null; }
+
+      const checks = {};
+      document.querySelectorAll('.check-config').forEach(el => {
+        const id = el.dataset.check;
+        const conf = {
+          enabled: el.querySelector('[data-field="enabled"]').checked,
+          required: el.querySelector('[data-field="required"]').checked,
+        };
+
+        // Gather extra config options
+        el.querySelectorAll('[data-field]').forEach(input => {
+          const field = input.dataset.field;
+          if (field === 'enabled' || field === 'required') return;
+          if (input.type === 'checkbox') {
+            conf[field] = input.checked;
+          } else if (input.type === 'number') {
+            conf[field] = input.value ? Number(input.value) : undefined;
+          } else if (input.tagName === 'SELECT') {
+            conf[field] = input.value;
+          } else {
+            // Handle comma-separated lists (like extensions)
+            const val = input.value.trim();
+            if (val.includes(',')) {
+              conf[field] = val.split(',').map(s => s.trim()).filter(Boolean);
+            } else {
+              conf[field] = val || undefined;
+            }
+          }
+        });
+
+        checks[id] = conf;
+      });
+
+      return { name, projectType, checks };
+    }
+
+    async function savePreset() {
+      const preset = gatherPresetData();
+      if (!preset) return;
+
+      try {
+        let res;
+        if (editingPresetKey) {
+          res = await fetch(`/api/presets/${editingPresetKey}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(preset),
+          });
+        } else {
+          res = await fetch('/api/presets', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(preset),
+          });
+        }
+
+        if (res.ok) {
+          document.getElementById('presetEditor').classList.add('hidden');
+          loadPresets();
+        } else {
+          const err = await res.json();
+          alert(err.error || 'Failed to save preset');
+        }
+      } catch (e) {
+        alert('Failed to save preset');
+      }
+    }
+
+    function cancelPreset() {
+      document.getElementById('presetEditor').classList.add('hidden');
+    }
+
+    async function deletePreset() {
+      if (!editingPresetKey) return;
+      if (!confirm(`Delete preset "${editingPresetKey}"?`)) return;
+
+      try {
+        await fetch(`/api/presets/${editingPresetKey}`, { method: 'DELETE' });
+        document.getElementById('presetEditor').classList.add('hidden');
+        loadPresets();
+      } catch {}
+    }
+
+    // ── Review ────────────────────────────────
     function updateFileLabel(input) {
       const label = document.getElementById('csvLabel');
       label.textContent = input.files[0]?.name || 'Choose CSV file...';
@@ -296,13 +1091,21 @@
       document.getElementById('reviewBtn').disabled = true;
 
       try {
+        const hoursReported = document.getElementById('hoursReported').value || undefined;
+        const journalCount = document.getElementById('journalCount').value || undefined;
+        const journal = document.getElementById('journalText').value.trim() || undefined;
+
         const res = await fetch('/api/review', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ url, preset })
+          body: JSON.stringify({ url, preset, hoursReported, journalCount, journal })
         });
         const data = await res.json();
-        showResults(data);
+        if (res.ok) {
+          showResults(data);
+        } else {
+          alert('Review failed: ' + (data.error || 'Unknown error'));
+        }
       } catch (err) {
         alert('Review failed: ' + err.message);
       } finally {
@@ -325,7 +1128,6 @@
         const res = await fetch('/api/batch', { method: 'POST', body: form });
         const { jobId } = await res.json();
 
-        // Poll for results
         const poll = setInterval(async () => {
           const r = await fetch(`/api/batch/${jobId}`);
           const job = await r.json();
@@ -349,12 +1151,10 @@
     function showResults(data) {
       document.getElementById('results').classList.remove('hidden');
 
-      // Overall status
       const statusEl = document.getElementById('overallStatus');
       statusEl.className = 'overall-status ' + (data.overallPass ? 'overall-pass' : 'overall-fail');
       statusEl.textContent = data.overallPass ? 'PASSED' : 'FAILED';
 
-      // Summary bar
       const checks = data.checkResults || [];
       const counts = {
         pass: checks.filter(c => c.status === 'pass').length,
@@ -370,7 +1170,36 @@
         <div class="summary-item"><div class="summary-number" style="color:var(--text-dim)">${counts.skip}</div><div class="summary-label">Skipped</div></div>
       `;
 
-      // Check list
+      // Cost display
+      const costPanel = document.getElementById('costPanel');
+      if (data.apiCost) {
+        costPanel.classList.remove('hidden');
+        const c = data.apiCost;
+        const costPerCall = c.callCount > 0 ? (c.totalCost / c.callCount) : 0;
+        sessionTotalCost += c.totalCost;
+        sessionCallCount += c.callCount;
+
+        document.getElementById('costBar').innerHTML = `
+          <span>This review: <span class="cost-value">$${c.totalCost.toFixed(4)}</span></span>
+          <span>API calls: <span class="cost-value">${c.callCount}</span></span>
+          <span>Cost/call: <span class="cost-value">$${costPerCall.toFixed(4)}</span></span>
+          <span>Tokens: <span class="cost-value">${(c.inputTokens + c.outputTokens).toLocaleString()}</span></span>
+        `;
+        document.getElementById('costSession').innerHTML =
+          `Session total: <span class="cost-value">$${sessionTotalCost.toFixed(4)}</span> across <span class="cost-value">${sessionCallCount}</span> API calls`;
+      } else {
+        costPanel.classList.add('hidden');
+      }
+
+      const hourPanel = document.getElementById('hourPanel');
+      if (data.hourEstimate != null) {
+        hourPanel.classList.remove('hidden');
+        document.getElementById('hourEstimate').textContent = data.hourEstimate;
+        document.getElementById('hourJustification').textContent = data.hourJustification || '';
+      } else {
+        hourPanel.classList.add('hidden');
+      }
+
       const listEl = document.getElementById('checkList');
       listEl.innerHTML = checks.map(c => `
         <div class="check-item">
@@ -382,19 +1211,18 @@
               ${c.aiUsed ? '<span class="ai-tag">[AI]</span>' : ''}
             </div>
             <div class="check-reason">${c.reason}</div>
-            ${c.evidence.length > 0 ? '<div class="check-evidence">' + c.evidence.slice(0, 3).join(' · ') + '</div>' : ''}
+            ${c.evidence.length > 0 ? '<div class="check-evidence">' + c.evidence.slice(0, 3).join(' &middot; ') + '</div>' : ''}
           </div>
         </div>
       `).join('');
 
-      // AI panel
       const aiPanel = document.getElementById('aiPanel');
       if (data.aiSummary) {
         aiPanel.classList.remove('hidden');
         document.getElementById('aiSummary').textContent = data.aiSummary;
         if (data.suggestedFixes?.length) {
           document.getElementById('fixes').innerHTML =
-            data.suggestedFixes.map(f => `<div style="color:var(--yellow);font-size:0.8rem;">→ ${f}</div>`).join('');
+            data.suggestedFixes.map(f => `<div style="color:var(--yellow);font-size:0.8rem;">&rarr; ${f}</div>`).join('');
         }
       } else {
         aiPanel.classList.add('hidden');
@@ -402,9 +1230,12 @@
     }
 
     // Enter to submit
-    document.getElementById('repoUrl').addEventListener('keydown', e => {
-      if (e.key === 'Enter') doReview();
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Enter' && e.target.id === 'repoUrl') doReview();
     });
+
+    // Boot
+    init();
   </script>
 </body>
 </html>

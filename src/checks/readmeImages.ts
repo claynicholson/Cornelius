@@ -46,8 +46,13 @@ export class ReadmeImagesCheck extends BaseCheck {
 
     if (this.claude) {
       try {
+        const isHardware = config.projectType !== "software";
+        const imageExamples = isHardware
+          ? "photo of the hardware, 3D render, PCB render, schematic screenshot, etc"
+          : "screenshot of the app, UI mockup, demo GIF, architecture diagram, etc";
+
         const analysis = await this.claude.askStructured<ImageAnalysis>(
-          `Analyze this README and determine if it contains at least one image that appears to be a project image (photo of the hardware, 3D render, PCB render, schematic screenshot, etc).
+          `Analyze this README and determine if it contains at least one image that appears to be a project image (${imageExamples}).
 
 Return JSON: {"hasProjectImage": boolean, "confidence": number 0-1, "reason": "explanation"}`,
           context.readme

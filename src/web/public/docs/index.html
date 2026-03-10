@@ -1,0 +1,959 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cornelius API Docs</title>
+  <style>
+    :root {
+      --bg: #0d1117;
+      --surface: #161b22;
+      --surface-2: #1c2129;
+      --border: #30363d;
+      --text: #e6edf3;
+      --text-dim: #8b949e;
+      --accent: #f0c000;
+      --green: #3fb950;
+      --red: #f85149;
+      --yellow: #d29922;
+      --blue: #58a6ff;
+      --purple: #bc8cff;
+      --cyan: #39d2c0;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+    }
+
+    /* ── Sidebar ─────────────────────────── */
+    .sidebar {
+      width: 260px;
+      min-height: 100vh;
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      padding: 1.5rem 0;
+      position: fixed;
+      overflow-y: auto;
+    }
+
+    .sidebar-logo {
+      text-align: center;
+      color: var(--accent);
+      font-size: 0.55rem;
+      line-height: 1.2;
+      white-space: pre;
+      padding: 0 1rem 0.5rem;
+    }
+
+    .sidebar-title {
+      text-align: center;
+      font-size: 0.75rem;
+      color: var(--text-dim);
+      padding-bottom: 1rem;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 1rem;
+    }
+
+    .sidebar-title strong { color: var(--text); }
+
+    .nav-section {
+      padding: 0 1rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .nav-section-title {
+      font-size: 0.65rem;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      margin-bottom: 0.5rem;
+    }
+
+    .nav-link {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.4rem 0.75rem;
+      border-radius: 4px;
+      color: var(--text);
+      text-decoration: none;
+      font-size: 0.8rem;
+      transition: background 0.15s;
+    }
+
+    .nav-link:hover { background: var(--surface-2); }
+
+    .nav-link .method {
+      font-size: 0.6rem;
+      font-weight: bold;
+      padding: 1px 5px;
+      border-radius: 3px;
+      min-width: 38px;
+      text-align: center;
+    }
+
+    .method-get { background: rgba(63,185,80,0.15); color: var(--green); }
+    .method-post { background: rgba(88,166,255,0.15); color: var(--blue); }
+
+    .back-link {
+      display: block;
+      padding: 0.5rem 1rem;
+      color: var(--text-dim);
+      text-decoration: none;
+      font-size: 0.75rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .back-link:hover { color: var(--accent); }
+
+    /* ── Main ────────────────────────────── */
+    .main {
+      margin-left: 260px;
+      flex: 1;
+      padding: 2rem 3rem;
+      max-width: 860px;
+    }
+
+    h1 {
+      font-size: 1.5rem;
+      color: var(--text);
+      margin-bottom: 0.5rem;
+    }
+
+    h1 span { color: var(--accent); }
+
+    .intro {
+      color: var(--text-dim);
+      font-size: 0.85rem;
+      margin-bottom: 2rem;
+      line-height: 1.6;
+    }
+
+    .base-url {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 0.75rem 1rem;
+      margin-bottom: 2rem;
+      font-size: 0.85rem;
+    }
+
+    .base-url .label {
+      color: var(--text-dim);
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 0.25rem;
+    }
+
+    .base-url code { color: var(--cyan); }
+
+    /* ── Endpoint ────────────────────────── */
+    .endpoint {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      margin-bottom: 2rem;
+      overflow: hidden;
+    }
+
+    .endpoint-header {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 1rem 1.25rem;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .endpoint-header .method {
+      font-size: 0.7rem;
+      font-weight: bold;
+      padding: 3px 8px;
+      border-radius: 4px;
+    }
+
+    .endpoint-header .path {
+      font-size: 0.95rem;
+      color: var(--text);
+    }
+
+    .endpoint-body {
+      padding: 1.25rem;
+    }
+
+    .endpoint-desc {
+      color: var(--text-dim);
+      font-size: 0.85rem;
+      margin-bottom: 1.25rem;
+      line-height: 1.5;
+    }
+
+    .section-label {
+      font-size: 0.7rem;
+      color: var(--accent);
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      margin-bottom: 0.5rem;
+      margin-top: 1rem;
+    }
+
+    /* ── Code Blocks ─────────────────────── */
+    pre {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 1rem;
+      overflow-x: auto;
+      font-size: 0.8rem;
+      line-height: 1.5;
+      margin-bottom: 1rem;
+    }
+
+    .key { color: var(--blue); }
+    .str { color: var(--green); }
+    .num { color: var(--yellow); }
+    .bool { color: var(--purple); }
+    .comment { color: var(--text-dim); }
+    .null { color: var(--red); }
+
+    /* ── Params Table ────────────────────── */
+    .params-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.8rem;
+      margin-bottom: 1rem;
+    }
+
+    .params-table th {
+      text-align: left;
+      padding: 0.5rem 0.75rem;
+      color: var(--text-dim);
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .params-table td {
+      padding: 0.5rem 0.75rem;
+      border-bottom: 1px solid var(--border);
+      vertical-align: top;
+    }
+
+    .params-table tr:last-child td { border-bottom: none; }
+
+    .param-name { color: var(--cyan); font-weight: bold; }
+    .param-type { color: var(--purple); font-size: 0.75rem; }
+    .param-required { color: var(--red); font-size: 0.65rem; font-weight: bold; }
+    .param-optional { color: var(--text-dim); font-size: 0.65rem; }
+
+    /* ── Status Codes ────────────────────── */
+    .status-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.8rem;
+      margin-bottom: 1rem;
+    }
+
+    .status-table td {
+      padding: 0.4rem 0.75rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .status-table tr:last-child td { border-bottom: none; }
+
+    .status-code {
+      font-weight: bold;
+      min-width: 40px;
+    }
+
+    .status-2xx { color: var(--green); }
+    .status-4xx { color: var(--yellow); }
+    .status-5xx { color: var(--red); }
+
+    /* ── Tabs ────────────────────────────── */
+    .tabs {
+      display: flex;
+      gap: 0;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 1rem;
+    }
+
+    .tab {
+      padding: 0.5rem 1rem;
+      font-size: 0.75rem;
+      color: var(--text-dim);
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: all 0.15s;
+      background: none;
+      border-top: none;
+      border-left: none;
+      border-right: none;
+      font-family: inherit;
+    }
+
+    .tab:hover { color: var(--text); }
+    .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    /* ── Try It ───────────────────────────── */
+    .try-it {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 1rem;
+      margin-top: 1rem;
+    }
+
+    .try-it-title {
+      font-size: 0.7rem;
+      color: var(--accent);
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      margin-bottom: 0.75rem;
+    }
+
+    .try-input {
+      width: 100%;
+      padding: 0.5rem 0.75rem;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      color: var(--text);
+      font-family: inherit;
+      font-size: 0.8rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .try-input:focus { outline: none; border-color: var(--accent); }
+
+    .try-btn {
+      padding: 0.5rem 1.25rem;
+      background: var(--accent);
+      color: var(--bg);
+      border: none;
+      border-radius: 4px;
+      font-family: inherit;
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 0.8rem;
+    }
+
+    .try-btn:hover { opacity: 0.85; }
+    .try-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .try-output {
+      margin-top: 0.75rem;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 0.75rem;
+      font-size: 0.75rem;
+      max-height: 400px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      word-break: break-all;
+      display: none;
+    }
+
+    /* ── Check list ──────────────────────── */
+    .check-list {
+      margin-bottom: 1rem;
+    }
+
+    .check-entry {
+      padding: 0.75rem 1rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .check-entry:last-child { border-bottom: none; }
+
+    .check-id {
+      color: var(--cyan);
+      font-weight: bold;
+      font-size: 0.85rem;
+    }
+
+    .check-detail {
+      color: var(--text-dim);
+      font-size: 0.8rem;
+      margin-top: 0.25rem;
+      line-height: 1.5;
+    }
+
+    .tag {
+      display: inline-block;
+      padding: 1px 6px;
+      border-radius: 3px;
+      font-size: 0.65rem;
+      font-weight: bold;
+      margin-left: 0.5rem;
+    }
+
+    .tag-rule { background: rgba(63,185,80,0.15); color: var(--green); }
+    .tag-ai { background: rgba(188,140,255,0.15); color: var(--purple); }
+
+    @media (max-width: 900px) {
+      .sidebar { display: none; }
+      .main { margin-left: 0; padding: 1.5rem; }
+    }
+  </style>
+</head>
+<body>
+  <!-- ── Sidebar ──────────────────────────── -->
+  <nav class="sidebar">
+    <pre class="sidebar-logo">
+ ╔═╗╔═╗╦═╗╔╗╔╔═╗╦  ╦╦ ╦╔═╗
+ ║  ║ ║╠╦╝║║║║╣ ║  ║║ ║╚═╗
+ ╚═╝╚═╝╩╚═╝╚╝╚═╝╩═╝╩╚═╝╚═╝</pre>
+    <div class="sidebar-title"><strong>API Docs</strong> v1.0.0</div>
+
+    <a href="/" class="back-link">&larr; Back to Dashboard</a>
+
+    <div class="nav-section">
+      <div class="nav-section-title">Overview</div>
+      <a href="#introduction" class="nav-link">Introduction</a>
+      <a href="#authentication" class="nav-link">Authentication</a>
+      <a href="#checks" class="nav-link">Available Checks</a>
+      <a href="#presets" class="nav-link">Presets</a>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-section-title">Endpoints</div>
+      <a href="#post-review" class="nav-link">
+        <span class="method method-post">POST</span> /api/review
+      </a>
+      <a href="#post-batch" class="nav-link">
+        <span class="method method-post">POST</span> /api/batch
+      </a>
+      <a href="#get-batch" class="nav-link">
+        <span class="method method-get">GET</span> /api/batch/:id
+      </a>
+      <a href="#get-health" class="nav-link">
+        <span class="method method-get">GET</span> /api/health
+      </a>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-section-title">Schemas</div>
+      <a href="#schema-review-result" class="nav-link">ReviewResult</a>
+      <a href="#schema-check-result" class="nav-link">CheckResult</a>
+      <a href="#schema-batch-result" class="nav-link">BatchResult</a>
+    </div>
+  </nav>
+
+  <!-- ── Main Content ─────────────────────── -->
+  <main class="main">
+    <h1><span>Cornelius</span> API</h1>
+    <p class="intro">
+      REST API for the Cornelius YSWS submission review engine.
+      Review GitHub repositories for hardware project completeness
+      using rule-based checks and AI-powered analysis.
+    </p>
+
+    <!-- Base URL -->
+    <div class="base-url" id="introduction">
+      <div class="label">Base URL</div>
+      <code>http://localhost:3000</code>
+    </div>
+
+    <!-- ── Authentication ─────────────────── -->
+    <div class="endpoint" id="authentication">
+      <div class="endpoint-header">
+        <span class="path" style="color:var(--accent)">Authentication</span>
+      </div>
+      <div class="endpoint-body">
+        <p class="endpoint-desc">
+          Cornelius uses server-side API keys configured via environment variables.
+          No client authentication is required for the REST API itself. The server
+          handles GitHub Proxy and Anthropic API authentication internally.
+        </p>
+        <div class="section-label">Environment Variables</div>
+        <table class="params-table">
+          <tr>
+            <th>Variable</th>
+            <th>Required</th>
+            <th>Description</th>
+          </tr>
+          <tr>
+            <td><span class="param-name">GH_PROXY_API_KEY</span></td>
+            <td><span class="param-required">REQUIRED</span></td>
+            <td>Hack Club GitHub Proxy API key for repo access</td>
+          </tr>
+          <tr>
+            <td><span class="param-name">ANTHROPIC_API_KEY</span></td>
+            <td><span class="param-optional">optional</span></td>
+            <td>Enables AI-powered checks (README quality, image analysis)</td>
+          </tr>
+          <tr>
+            <td><span class="param-name">PORT</span></td>
+            <td><span class="param-optional">optional</span></td>
+            <td>Server port (default: <span class="num">3000</span>)</td>
+          </tr>
+        </table>
+      </div>
+    </div>
+
+    <!-- ── Available Checks ───────────────── -->
+    <div class="endpoint" id="checks">
+      <div class="endpoint-header">
+        <span class="path" style="color:var(--accent)">Available Checks</span>
+      </div>
+      <div class="endpoint-body">
+        <p class="endpoint-desc">
+          Each review runs a set of checks against the target repository.
+          Checks are either rule-based (deterministic) or AI-powered (uses Claude).
+        </p>
+        <div class="check-list">
+          <div class="check-entry">
+            <span class="check-id">github_link_works</span>
+            <span class="tag tag-rule">RULE</span>
+            <div class="check-detail">Validates the GitHub URL is reachable and the repository contains files.</div>
+          </div>
+          <div class="check-entry">
+            <span class="check-id">readme_present</span>
+            <span class="tag tag-rule">RULE</span>
+            <div class="check-detail">Checks for a README file at the repository root. Accepts README.md, README, README.txt, README.rst, README.adoc.</div>
+          </div>
+          <div class="check-entry">
+            <span class="check-id">readme_quality</span>
+            <span class="tag tag-ai">AI</span>
+            <div class="check-detail">Evaluates README for project description, build instructions, and overall quality. Falls back to word count / heading heuristic without AI.</div>
+          </div>
+          <div class="check-entry">
+            <span class="check-id">readme_has_project_image</span>
+            <span class="tag tag-ai">AI</span>
+            <div class="check-detail">Detects markdown/HTML image tags in README and optionally uses AI to determine if they are project-relevant (hardware photo, 3D render, PCB render).</div>
+          </div>
+          <div class="check-entry">
+            <span class="check-id">three_d_files_present</span>
+            <span class="tag tag-rule">RULE</span>
+            <div class="check-detail">Scans for 3D design files: .stl, .step, .stp, .3mf, .obj, .f3d, .fcstd, .scad. Configurable extensions and minimum count.</div>
+          </div>
+          <div class="check-entry">
+            <span class="check-id">pcb_files_present</span>
+            <span class="tag tag-rule">RULE</span>
+            <div class="check-detail">Detects PCB design files for KiCad (.kicad_pro, .kicad_sch, .kicad_pcb), EasyEDA (.epro), Eagle (.sch, .brd), Altium (.PrjPcb, .SchDoc, .PcbDoc), and Gerber outputs.</div>
+          </div>
+          <div class="check-entry">
+            <span class="check-id">bom_present_if_required</span>
+            <span class="tag tag-rule">RULE</span>
+            <div class="check-detail">Looks for bill of materials files (bom.csv, parts.csv, etc.) or a BOM section in the README.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Presets ────────────────────────── -->
+    <div class="endpoint" id="presets">
+      <div class="endpoint-header">
+        <span class="path" style="color:var(--accent)">Presets</span>
+      </div>
+      <div class="endpoint-body">
+        <p class="endpoint-desc">
+          Presets configure which checks are enabled, required, and their parameters.
+          Pass a preset name to any review endpoint.
+        </p>
+        <table class="params-table">
+          <tr><th>Name</th><th>Description</th></tr>
+          <tr>
+            <td><span class="param-name">default</span></td>
+            <td>Standard hardware review. BOM and README quality are warnings only.</td>
+          </tr>
+          <tr>
+            <td><span class="param-name">hardware-default</span></td>
+            <td>Strict hardware review. All checks required including BOM and README quality.</td>
+          </tr>
+          <tr>
+            <td><span class="param-name">blueprint</span></td>
+            <td>Hack Club Blueprint program preset. All checks required, broad 3D file format support.</td>
+          </tr>
+        </table>
+      </div>
+    </div>
+
+    <!-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ -->
+    <!-- ENDPOINTS                             -->
+    <!-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ -->
+
+    <!-- ── POST /api/review ───────────────── -->
+    <div class="endpoint" id="post-review">
+      <div class="endpoint-header">
+        <span class="method method-post">POST</span>
+        <span class="path">/api/review</span>
+      </div>
+      <div class="endpoint-body">
+        <p class="endpoint-desc">
+          Review a single GitHub repository. Runs all enabled checks from the
+          selected preset and returns detailed results.
+        </p>
+
+        <div class="section-label">Request Body</div>
+        <table class="params-table">
+          <tr><th>Field</th><th>Type</th><th></th><th>Description</th></tr>
+          <tr>
+            <td><span class="param-name">url</span></td>
+            <td><span class="param-type">string</span></td>
+            <td><span class="param-required">REQUIRED</span></td>
+            <td>GitHub repository URL</td>
+          </tr>
+          <tr>
+            <td><span class="param-name">preset</span></td>
+            <td><span class="param-type">string</span></td>
+            <td><span class="param-optional">optional</span></td>
+            <td>Preset name (default: <span class="str">"default"</span>)</td>
+          </tr>
+        </table>
+
+        <div class="tabs">
+          <button class="tab active" onclick="switchTab(this, 'review-req')">Request</button>
+          <button class="tab" onclick="switchTab(this, 'review-res')">Response</button>
+        </div>
+
+        <div class="tab-content active" id="review-req">
+<pre><span class="comment">// POST /api/review</span>
+<span class="comment">// Content-Type: application/json</span>
+
+{
+  <span class="key">"url"</span>: <span class="str">"https://github.com/user/hardware-project"</span>,
+  <span class="key">"preset"</span>: <span class="str">"blueprint"</span>
+}</pre>
+        </div>
+
+        <div class="tab-content" id="review-res">
+<pre>{
+  <span class="key">"githubUrl"</span>: <span class="str">"https://github.com/user/hardware-project"</span>,
+  <span class="key">"status"</span>: <span class="str">"pass"</span>,
+  <span class="key">"overallPass"</span>: <span class="bool">true</span>,
+  <span class="key">"checkResults"</span>: [
+    {
+      <span class="key">"checkName"</span>: <span class="str">"github_link_works"</span>,
+      <span class="key">"required"</span>: <span class="bool">true</span>,
+      <span class="key">"status"</span>: <span class="str">"pass"</span>,
+      <span class="key">"confidence"</span>: <span class="num">1.0</span>,
+      <span class="key">"evidence"</span>: [<span class="str">"https://github.com/user/hardware-project"</span>],
+      <span class="key">"reason"</span>: <span class="str">"Repository is accessible and contains files"</span>,
+      <span class="key">"aiUsed"</span>: <span class="bool">false</span>
+    }
+    <span class="comment">// ... more check results</span>
+  ],
+  <span class="key">"warnings"</span>: [],
+  <span class="key">"errors"</span>: [],
+  <span class="key">"aiSummary"</span>: <span class="str">"Project has complete PCB and CAD files..."</span>,
+  <span class="key">"suggestedFixes"</span>: [],
+  <span class="key">"confidenceScore"</span>: <span class="num">0.95</span>
+}</pre>
+        </div>
+
+        <div class="section-label">Status Codes</div>
+        <table class="status-table">
+          <tr><td class="status-code status-2xx">200</td><td>Review completed (check <span class="param-name">overallPass</span> for result)</td></tr>
+          <tr><td class="status-code status-4xx">400</td><td>Invalid or missing GitHub URL</td></tr>
+          <tr><td class="status-code status-5xx">500</td><td>Server error during review</td></tr>
+        </table>
+
+        <!-- Try It -->
+        <div class="try-it">
+          <div class="try-it-title">Try It</div>
+          <input class="try-input" id="tryUrl" placeholder="https://github.com/owner/repo">
+          <select class="try-input" id="tryPreset" style="width:auto; display:inline-block; margin-left:0;">
+            <option value="default">default</option>
+            <option value="hardware-default">hardware-default</option>
+            <option value="blueprint">blueprint</option>
+          </select>
+          <button class="try-btn" id="tryBtn" onclick="tryReview()">Send Request</button>
+          <pre class="try-output" id="tryOutput"></pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── POST /api/batch ────────────────── -->
+    <div class="endpoint" id="post-batch">
+      <div class="endpoint-header">
+        <span class="method method-post">POST</span>
+        <span class="path">/api/batch</span>
+      </div>
+      <div class="endpoint-body">
+        <p class="endpoint-desc">
+          Upload a CSV file of repositories for batch review. Returns a job ID
+          to poll for progress. The CSV must have a <span class="param-name">github_url</span> column.
+        </p>
+
+        <div class="section-label">Request</div>
+        <table class="params-table">
+          <tr><th>Field</th><th>Type</th><th></th><th>Description</th></tr>
+          <tr>
+            <td><span class="param-name">csv</span></td>
+            <td><span class="param-type">file</span></td>
+            <td><span class="param-required">REQUIRED</span></td>
+            <td>CSV file (multipart/form-data)</td>
+          </tr>
+          <tr>
+            <td><span class="param-name">preset</span></td>
+            <td><span class="param-type">string</span></td>
+            <td><span class="param-optional">optional</span></td>
+            <td>Preset name (default: <span class="str">"default"</span>)</td>
+          </tr>
+        </table>
+
+        <div class="section-label">CSV Format</div>
+<pre><span class="comment">// Required: github_url column</span>
+<span class="comment">// Optional: project_type, program_preset, submission_id, participant_name, email, notes</span>
+
+github_url,submission_id,participant_name
+https://github.com/user/project-a,001,Alice
+https://github.com/user/project-b,002,Bob</pre>
+
+        <div class="section-label">Response</div>
+<pre>{
+  <span class="key">"jobId"</span>: <span class="str">"m5x8k2abc1"</span>,
+  <span class="key">"status"</span>: <span class="str">"processing"</span>
+}</pre>
+
+        <div class="section-label">Status Codes</div>
+        <table class="status-table">
+          <tr><td class="status-code status-2xx">200</td><td>Batch job created, returns job ID</td></tr>
+          <tr><td class="status-code status-4xx">400</td><td>No CSV file uploaded</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <!-- ── GET /api/batch/:jobId ──────────── -->
+    <div class="endpoint" id="get-batch">
+      <div class="endpoint-header">
+        <span class="method method-get">GET</span>
+        <span class="path">/api/batch/:jobId</span>
+      </div>
+      <div class="endpoint-body">
+        <p class="endpoint-desc">
+          Poll for batch job progress and results. Returns current status, completion count,
+          and results array when complete.
+        </p>
+
+        <div class="section-label">Path Parameters</div>
+        <table class="params-table">
+          <tr><th>Param</th><th>Type</th><th>Description</th></tr>
+          <tr>
+            <td><span class="param-name">jobId</span></td>
+            <td><span class="param-type">string</span></td>
+            <td>Job ID returned from <span class="param-name">POST /api/batch</span></td>
+          </tr>
+        </table>
+
+        <div class="tabs">
+          <button class="tab active" onclick="switchTab(this, 'batch-progress')">In Progress</button>
+          <button class="tab" onclick="switchTab(this, 'batch-complete')">Complete</button>
+        </div>
+
+        <div class="tab-content active" id="batch-progress">
+<pre>{
+  <span class="key">"status"</span>: <span class="str">"processing"</span>,
+  <span class="key">"total"</span>: <span class="num">50</span>,
+  <span class="key">"completed"</span>: <span class="num">12</span>,
+  <span class="key">"results"</span>: []
+}</pre>
+        </div>
+
+        <div class="tab-content" id="batch-complete">
+<pre>{
+  <span class="key">"status"</span>: <span class="str">"complete"</span>,
+  <span class="key">"total"</span>: <span class="num">50</span>,
+  <span class="key">"completed"</span>: <span class="num">50</span>,
+  <span class="key">"results"</span>: [
+    {
+      <span class="key">"submissionId"</span>: <span class="str">"001"</span>,
+      <span class="key">"githubUrl"</span>: <span class="str">"https://github.com/user/project-a"</span>,
+      <span class="key">"projectType"</span>: <span class="str">"hardware"</span>,
+      <span class="key">"overallStatus"</span>: <span class="str">"pass"</span>,
+      <span class="key">"passedChecks"</span>: [<span class="str">"github_link_works"</span>, <span class="str">"readme_present"</span>],
+      <span class="key">"failedChecks"</span>: [],
+      <span class="key">"warnings"</span>: [],
+      <span class="key">"reviewSummary"</span>: <span class="str">"All checks passed"</span>,
+      <span class="key">"confidenceScore"</span>: <span class="num">0.98</span>
+    }
+    <span class="comment">// ... more results</span>
+  ]
+}</pre>
+        </div>
+
+        <div class="section-label">Status Codes</div>
+        <table class="status-table">
+          <tr><td class="status-code status-2xx">200</td><td>Job found, returns current state</td></tr>
+          <tr><td class="status-code status-4xx">404</td><td>Job ID not found</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <!-- ── GET /api/health ────────────────── -->
+    <div class="endpoint" id="get-health">
+      <div class="endpoint-header">
+        <span class="method method-get">GET</span>
+        <span class="path">/api/health</span>
+      </div>
+      <div class="endpoint-body">
+        <p class="endpoint-desc">
+          Returns server health status and whether API keys are configured.
+        </p>
+
+        <div class="section-label">Response</div>
+<pre>{
+  <span class="key">"status"</span>: <span class="str">"ok"</span>,
+  <span class="key">"version"</span>: <span class="str">"1.0.0"</span>,
+  <span class="key">"github"</span>: <span class="bool">true</span>,   <span class="comment">// GH_PROXY_API_KEY configured</span>
+  <span class="key">"ai"</span>: <span class="bool">false</span>        <span class="comment">// ANTHROPIC_API_KEY configured</span>
+}</pre>
+
+        <!-- Live Try It -->
+        <div class="try-it">
+          <div class="try-it-title">Try It</div>
+          <button class="try-btn" onclick="tryHealth()">Send Request</button>
+          <pre class="try-output" id="healthOutput"></pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ -->
+    <!-- SCHEMAS                               -->
+    <!-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ -->
+
+    <h1 style="margin-top:2rem"><span>Schemas</span></h1>
+    <p class="intro">Response type definitions.</p>
+
+    <!-- ReviewResult -->
+    <div class="endpoint" id="schema-review-result">
+      <div class="endpoint-header">
+        <span class="path" style="color:var(--cyan)">ReviewResult</span>
+      </div>
+      <div class="endpoint-body">
+        <table class="params-table">
+          <tr><th>Field</th><th>Type</th><th>Description</th></tr>
+          <tr><td><span class="param-name">githubUrl</span></td><td><span class="param-type">string</span></td><td>The reviewed repository URL</td></tr>
+          <tr><td><span class="param-name">status</span></td><td><span class="param-type">"pass" | "fail" | "warning" | "error"</span></td><td>Overall review status</td></tr>
+          <tr><td><span class="param-name">overallPass</span></td><td><span class="param-type">boolean</span></td><td>True if no required checks failed</td></tr>
+          <tr><td><span class="param-name">checkResults</span></td><td><span class="param-type">CheckResult[]</span></td><td>Individual check results</td></tr>
+          <tr><td><span class="param-name">warnings</span></td><td><span class="param-type">string[]</span></td><td>Warning messages</td></tr>
+          <tr><td><span class="param-name">errors</span></td><td><span class="param-type">string[]</span></td><td>Error messages from failed required checks</td></tr>
+          <tr><td><span class="param-name">aiSummary</span></td><td><span class="param-type">string?</span></td><td>AI-generated review summary (if AI enabled)</td></tr>
+          <tr><td><span class="param-name">suggestedFixes</span></td><td><span class="param-type">string[]?</span></td><td>AI-suggested improvements</td></tr>
+          <tr><td><span class="param-name">confidenceScore</span></td><td><span class="param-type">number</span></td><td>Average confidence across checks (0-1)</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <!-- CheckResult -->
+    <div class="endpoint" id="schema-check-result">
+      <div class="endpoint-header">
+        <span class="path" style="color:var(--cyan)">CheckResult</span>
+      </div>
+      <div class="endpoint-body">
+        <table class="params-table">
+          <tr><th>Field</th><th>Type</th><th>Description</th></tr>
+          <tr><td><span class="param-name">checkName</span></td><td><span class="param-type">string</span></td><td>Check identifier</td></tr>
+          <tr><td><span class="param-name">required</span></td><td><span class="param-type">boolean</span></td><td>Whether this check is required to pass</td></tr>
+          <tr><td><span class="param-name">status</span></td><td><span class="param-type">"pass" | "fail" | "warning" | "error" | "skipped"</span></td><td>Check result status</td></tr>
+          <tr><td><span class="param-name">confidence</span></td><td><span class="param-type">number</span></td><td>Confidence in result (0-1)</td></tr>
+          <tr><td><span class="param-name">evidence</span></td><td><span class="param-type">string[]</span></td><td>Files or data supporting the result</td></tr>
+          <tr><td><span class="param-name">reason</span></td><td><span class="param-type">string</span></td><td>Human-readable explanation</td></tr>
+          <tr><td><span class="param-name">aiUsed</span></td><td><span class="param-type">boolean</span></td><td>Whether Claude AI was used for this check</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <!-- BatchResult -->
+    <div class="endpoint" id="schema-batch-result">
+      <div class="endpoint-header">
+        <span class="path" style="color:var(--cyan)">BatchResult</span>
+      </div>
+      <div class="endpoint-body">
+        <table class="params-table">
+          <tr><th>Field</th><th>Type</th><th>Description</th></tr>
+          <tr><td><span class="param-name">submissionId</span></td><td><span class="param-type">string</span></td><td>ID from CSV or auto-generated index</td></tr>
+          <tr><td><span class="param-name">githubUrl</span></td><td><span class="param-type">string</span></td><td>Repository URL</td></tr>
+          <tr><td><span class="param-name">projectType</span></td><td><span class="param-type">string</span></td><td>Project type (e.g. "hardware")</td></tr>
+          <tr><td><span class="param-name">overallStatus</span></td><td><span class="param-type">string</span></td><td>Overall status</td></tr>
+          <tr><td><span class="param-name">passedChecks</span></td><td><span class="param-type">string[]</span></td><td>IDs of passed checks</td></tr>
+          <tr><td><span class="param-name">failedChecks</span></td><td><span class="param-type">string[]</span></td><td>IDs of failed checks</td></tr>
+          <tr><td><span class="param-name">warnings</span></td><td><span class="param-type">string[]</span></td><td>Warning messages</td></tr>
+          <tr><td><span class="param-name">reviewSummary</span></td><td><span class="param-type">string</span></td><td>AI summary or status string</td></tr>
+          <tr><td><span class="param-name">confidenceScore</span></td><td><span class="param-type">number</span></td><td>Average confidence (0-1)</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <div style="color:var(--text-dim); font-size:0.75rem; text-align:center; margin-top:3rem; padding:1rem; border-top:1px solid var(--border);">
+      Cornelius v1.0.0 &middot; Hack Club YSWS Review Engine<br>
+      GitHub Proxy: <a href="https://gh-proxy.hackclub.com/docs" style="color:var(--blue)">gh-proxy.hackclub.com</a>
+    </div>
+  </main>
+
+  <script>
+    function switchTab(el, contentId) {
+      const parent = el.closest('.endpoint-body');
+      parent.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      parent.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+      el.classList.add('active');
+      document.getElementById(contentId).classList.add('active');
+    }
+
+    async function tryReview() {
+      const url = document.getElementById('tryUrl').value.trim();
+      const preset = document.getElementById('tryPreset').value;
+      const output = document.getElementById('tryOutput');
+      const btn = document.getElementById('tryBtn');
+
+      if (!url) { output.style.display = 'block'; output.textContent = 'Enter a GitHub URL'; return; }
+
+      btn.disabled = true;
+      btn.textContent = 'Sending...';
+      output.style.display = 'block';
+      output.textContent = 'Reviewing repository...';
+
+      try {
+        const res = await fetch('/api/review', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ url, preset })
+        });
+        const data = await res.json();
+        output.textContent = JSON.stringify(data, null, 2);
+      } catch (err) {
+        output.textContent = 'Error: ' + err.message;
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Send Request';
+      }
+    }
+
+    async function tryHealth() {
+      const output = document.getElementById('healthOutput');
+      output.style.display = 'block';
+      output.textContent = 'Loading...';
+      try {
+        const res = await fetch('/api/health');
+        const data = await res.json();
+        output.textContent = JSON.stringify(data, null, 2);
+      } catch (err) {
+        output.textContent = 'Error: ' + err.message;
+      }
+    }
+
+    // Smooth scroll for nav links
+    document.querySelectorAll('.nav-link[href^="#"]').forEach(a => {
+      a.addEventListener('click', e => {
+        e.preventDefault();
+        const id = a.getAttribute('href').slice(1);
+        document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+    });
+  </script>
+</body>
+</html>

@@ -65,6 +65,8 @@ program
   .option("-o, --output <file>", "Output file path", "results.csv")
   .option("-f, --format <type>", "Output format (csv or json)", "csv")
   .option("-c, --concurrency <n>", "Concurrent reviews", "5")
+  .option("--workers", "Force worker threads for parallelism")
+  .option("--no-workers", "Disable worker threads (single-threaded)")
   .option("--no-ai", "Disable AI-powered checks")
   .action(
     async (
@@ -75,6 +77,7 @@ program
         format: string;
         concurrency: string;
         ai: boolean;
+        workers?: boolean;
       }
     ) => {
       printSmallBanner();
@@ -92,8 +95,20 @@ program
         process.exit(1);
       }
 
+      const concurrency = parseInt(opts.concurrency, 10);
+      const useWorkers = opts.workers ?? rows.length > 10;
+      const { cpus } = await import("os");
+      const workerCount = useWorkers
+        ? Math.min(Math.max(1, cpus().length - 1), concurrency, rows.length)
+        : 1;
+
       spinner.succeed(
         chalk.green(`  Loaded ${rows.length} repositories from CSV`)
+      );
+      console.log(
+        chalk.dim(
+          `  ${useWorkers ? `Using ${workerCount} worker threads` : "Single-threaded mode"} · concurrency: ${concurrency}`
+        )
       );
       console.log(DIVIDER);
 
@@ -103,7 +118,8 @@ program
         ghProxyApiKey: process.env.GH_PROXY_API_KEY,
         anthropicApiKey: opts.ai ? process.env.ANTHROPIC_API_KEY : undefined,
         preset: opts.preset,
-        concurrency: parseInt(opts.concurrency, 10),
+        concurrency,
+        useWorkers,
         onProgress: (completed, total, result) => {
           const pct = Math.round((completed / total) * 100);
           const icon = result.overallPass ? chalk.green("✔") : chalk.red("✘");
