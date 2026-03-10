@@ -4,6 +4,7 @@ import { ClaudeClient } from "../ai/claude.js";
 import { parseGitHubUrl } from "../github/parser.js";
 import { createChecks } from "../checks/index.js";
 import { getCheckConfig, loadPreset } from "./preset.js";
+import { loadInstructions } from "./instructions.js";
 
 export interface HourContext {
   hoursReported?: number;
@@ -17,6 +18,7 @@ export interface ReviewOptions {
   preset?: string;
   presetConfig?: PresetConfig;
   hourContext?: HourContext;
+  playableUrl?: string;
 }
 
 export async function reviewRepository(
@@ -36,11 +38,6 @@ export async function reviewRepository(
     };
   }
 
-  const github = new GitHubClient(options.ghProxyApiKey);
-  const claude = options.anthropicApiKey
-    ? new ClaudeClient(options.anthropicApiKey)
-    : undefined;
-
   // Load preset
   let preset: PresetConfig;
   if (options.presetConfig) {
@@ -56,6 +53,16 @@ export async function reviewRepository(
       };
     }
   }
+
+  // Load instruction file if preset references one
+  const instructions = preset.instructions
+    ? loadInstructions(preset.instructions)
+    : {};
+
+  const github = new GitHubClient(options.ghProxyApiKey);
+  const claude = options.anthropicApiKey
+    ? new ClaudeClient(options.anthropicApiKey, undefined, preset.maxBudget)
+    : undefined;
 
   // Build repo context
   let context: RepoContext;
@@ -122,6 +129,16 @@ export async function reviewRepository(
     // Inject project type so AI checks can adapt their prompts
     config.projectType = preset.projectType || "hardware";
 
+    // Inject prompt from instruction file if available
+    if (instructions[check.id]) {
+      config.prompt = instructions[check.id];
+    }
+
+    // Inject playable URL for url_alive check
+    if (check.id === "url_alive" && options.playableUrl) {
+      config.url = options.playableUrl;
+    }
+
     if (!config.enabled) {
       results.push({
         checkName: check.id,
@@ -170,15 +187,16 @@ export async function reviewRepository(
 
   if (claude) {
     try {
+      const defaultSummaryPrompt = `Based on these review results for a ${preset.projectType || "hardware"} project repository, provide a brief summary and any suggested fixes. This is a ${preset.projectType || "hardware"} project — frame your feedback accordingly.
+
+Return JSON: {"summary": "brief summary", "fixes": ["fix1", "fix2"]}`;
+
+      const summaryPrompt = instructions.summary || defaultSummaryPrompt;
+
       const summaryData = await claude.askStructured<{
         summary: string;
         fixes: string[];
-      }>(
-        `Based on these review results for a ${preset.projectType || "hardware"} project repository, provide a brief summary and any suggested fixes. This is a ${preset.projectType || "hardware"} project — frame your feedback accordingly.
-
-Return JSON: {"summary": "brief summary", "fixes": ["fix1", "fix2"]}`,
-        JSON.stringify(results, null, 2)
-      );
+      }>(summaryPrompt, JSON.stringify(results, null, 2));
       aiSummary = summaryData.summary;
       suggestedFixes = summaryData.fixes;
     } catch {
@@ -206,6 +224,8 @@ Return JSON: {"summary": "brief summary", "fixes": ["fix1", "fix2"]}`,
       const projectType = preset.projectType || "hardware";
       const isSoftware = projectType === "software";
 
+      const deepReviewResult = results.find((r) => r.checkName === "deep_code_review");
+
       const projectInfo = {
         repoUrl: url,
         fileCount: context.tree.length,
@@ -214,7 +234,10 @@ Return JSON: {"summary": "brief summary", "fixes": ["fix1", "fix2"]}`,
         hasBom: results.find((r) => r.checkName === "bom_present_if_required")?.status === "pass",
         hasSourceCode: results.find((r) => r.checkName === "source_code_present")?.status === "pass",
         codeQuality: results.find((r) => r.checkName === "code_quality_overview")?.status,
+        deepReview: deepReviewResult?.status,
+        deepReviewReason: deepReviewResult?.reason,
         readmeQuality: results.find((r) => r.checkName === "readme_quality")?.status,
+        urlAlive: results.find((r) => r.checkName === "url_alive")?.status,
         overallPass,
         hoursReported: hourCtx.hoursReported,
         journalCount: hourCtx.journalCount,
@@ -238,7 +261,7 @@ Return JSON: {"summary": "brief summary", "fixes": ["fix1", "fix2"]}`,
 - Copy-pasting tutorial code is not verifiable work
 - Setting up a git repo should be 0.5 hours max`;
 
-      const hourPrompt = `You are a reviewer for Hack Club's YSWS program. You need to estimate how many hours this ${projectType} project actually took and write a human-sounding justification.
+      const defaultHourPrompt = `You are a reviewer for Hack Club's YSWS program. You need to estimate how many hours this ${projectType} project actually took and write a human-sounding justification.
 
 ${hasHourData ? `The user self-reported ${hourCtx.hoursReported ?? "unknown"} hours across ${hourCtx.journalCount ?? "unknown"} journal entries.` : "No self-reported hours or journal were provided."}
 
@@ -248,7 +271,7 @@ Context about the project repository:
 - Project type: ${projectType}
 - Total files: ${projectInfo.fileCount}
 ${isSoftware ? `- Has source code: ${projectInfo.hasSourceCode}
-- Code quality: ${projectInfo.codeQuality}` : `- Has 3D/CAD files: ${projectInfo.has3dFiles}
+- Code quality: ${projectInfo.codeQuality || projectInfo.deepReview}${projectInfo.deepReviewReason ? `\n- Deep review: ${projectInfo.deepReviewReason}` : ""}${projectInfo.urlAlive ? `\n- Deployed URL: ${projectInfo.urlAlive}` : ""}` : `- Has 3D/CAD files: ${projectInfo.has3dFiles}
 - Has PCB design files: ${projectInfo.hasPcbFiles}
 - Has BOM: ${projectInfo.hasBom}`}
 - README quality: ${projectInfo.readmeQuality}
@@ -266,10 +289,25 @@ Write a natural, human-sounding justification (2-4 sentences) like a real review
 
 Return JSON: {"hourEstimate": <number>, "justification": "<string>"}`;
 
+      const hourPrompt = instructions.hour_estimation || defaultHourPrompt;
+
+      // If using instruction file prompt, append the dynamic context
+      const hourContent = instructions.hour_estimation
+        ? `${hasHourData ? `The user self-reported ${hourCtx.hoursReported ?? "unknown"} hours across ${hourCtx.journalCount ?? "unknown"} journal entries.` : "No self-reported hours or journal were provided."}
+
+${hourCtx.journal ? `Their journal content:\n${hourCtx.journal}` : ""}
+
+Context about the project repository:
+${JSON.stringify(projectInfo, null, 2)}
+
+Check results:
+${JSON.stringify(results, null, 2)}`
+        : JSON.stringify(results, null, 2);
+
       const hourData = await claude.askStructured<{
         hourEstimate: number;
         justification: string;
-      }>(hourPrompt, JSON.stringify(results, null, 2));
+      }>(hourPrompt, hourContent);
 
       hourEstimate = hourData.hourEstimate;
       hourJustification = hourData.justification;

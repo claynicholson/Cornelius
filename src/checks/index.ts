@@ -12,6 +12,8 @@ import { GitignoreCheck } from "./gitignorePresent.js";
 import { PackageManagerCheck } from "./packageManager.js";
 import { LicensePresentCheck } from "./licensePresent.js";
 import { CodeQualityCheck } from "./codeQuality.js";
+import { UrlAliveCheck } from "./urlAlive.js";
+import { DeepCodeReviewCheck } from "./deepCodeReview.js";
 
 export function createChecks(claude?: ClaudeClient): Check[] {
   return [
@@ -27,6 +29,8 @@ export function createChecks(claude?: ClaudeClient): Check[] {
     new PackageManagerCheck(),
     new LicensePresentCheck(),
     new CodeQualityCheck(claude),
+    new UrlAliveCheck(claude),
+    new DeepCodeReviewCheck(claude),
   ];
 }
 
@@ -43,4 +47,6 @@ export {
   PackageManagerCheck,
   LicensePresentCheck,
   CodeQualityCheck,
+  UrlAliveCheck,
+  DeepCodeReviewCheck,
 };

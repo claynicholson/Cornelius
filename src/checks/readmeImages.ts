@@ -51,10 +51,12 @@ export class ReadmeImagesCheck extends BaseCheck {
           ? "photo of the hardware, 3D render, PCB render, schematic screenshot, etc"
           : "screenshot of the app, UI mockup, demo GIF, architecture diagram, etc";
 
-        const analysis = await this.claude.askStructured<ImageAnalysis>(
-          `Analyze this README and determine if it contains at least one image that appears to be a project image (${imageExamples}).
+        const defaultPrompt = `Analyze this README and determine if it contains at least one image that appears to be a project image (${imageExamples}).
 
-Return JSON: {"hasProjectImage": boolean, "confidence": number 0-1, "reason": "explanation"}`,
+Return JSON: {"hasProjectImage": boolean, "confidence": number 0-1, "reason": "explanation"}`;
+
+        const analysis = await this.claude.askStructured<ImageAnalysis>(
+          (config.prompt as string) || defaultPrompt,
           context.readme
         );
 

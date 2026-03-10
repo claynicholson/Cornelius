@@ -69,8 +69,7 @@ export class CodeQualityCheck extends BaseCheck {
         return this.heuristicCheck(sourceFiles, context, config);
       }
 
-      const analysis = await this.claude.askStructured<QualityAnalysis>(
-        `You are reviewing a student software project for Hack Club. Assess the code quality based on these sample files.
+      const defaultPrompt = `You are reviewing a student software project for Hack Club. Assess the code quality based on these sample files.
 
 Consider:
 1. Does this look like original work (not just a tutorial copy-paste or boilerplate)?
@@ -86,7 +85,10 @@ Return JSON:
   "confidence": number 0-1,
   "reason": "brief explanation",
   "suggestions": ["suggestion1", "suggestion2"]
-}`,
+}`;
+
+      const analysis = await this.claude.askStructured<QualityAnalysis>(
+        (config.prompt as string) || defaultPrompt,
         fileContents.join("\n\n"),
       );
 

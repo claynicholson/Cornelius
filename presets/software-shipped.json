@@ -1,7 +1,8 @@
 {
-  "name": "Software Default",
+  "name": "Software Shipped",
   "projectType": "software",
-  "instructions": "software",
+  "instructions": "software-shipped",
+  "maxBudget": 0.55,
   "checks": {
     "github_link_works": {
       "enabled": true,
@@ -13,8 +14,8 @@
     },
     "readme_quality": {
       "enabled": true,
-      "required": false,
-      "severity": "warning"
+      "required": true,
+      "severity": "fail"
     },
     "readme_has_project_image": {
       "enabled": true,
@@ -24,17 +25,15 @@
     "source_code_present": {
       "enabled": true,
       "required": true,
-      "minimum_file_count": 3
+      "minimum_file_count": 5
     },
     "gitignore_present": {
       "enabled": true,
-      "required": false,
-      "severity": "warning"
+      "required": true
     },
     "package_manager_present": {
       "enabled": true,
-      "required": false,
-      "severity": "warning"
+      "required": true
     },
     "license_present": {
       "enabled": true,
@@ -42,9 +41,16 @@
       "severity": "warning"
     },
     "code_quality_overview": {
+      "enabled": false,
+      "required": false
+    },
+    "url_alive": {
       "enabled": true,
-      "required": false,
-      "severity": "warning"
+      "required": true
+    },
+    "deep_code_review": {
+      "enabled": true,
+      "required": true
     },
     "three_d_files_present": {
       "enabled": false,

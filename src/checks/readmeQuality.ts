@@ -53,8 +53,7 @@ export class ReadmeQualityCheck extends BaseCheck {
       const isHardware = config.projectType !== "software";
       const instructionType = isHardware ? "build/assembly" : "setup/installation";
 
-      const analysis = await this.claude.askStructured<QualityAnalysis>(
-        `Analyze this ${isHardware ? "hardware" : "software"} project README for quality. Check if it:
+      const defaultPrompt = `Analyze this ${isHardware ? "hardware" : "software"} project README for quality. Check if it:
 1. Has a clear project description
 2. Explains what the project does and why
 3. Has ${instructionType} instructions or links to them
@@ -68,7 +67,10 @@ Return JSON:
   "confidence": number 0-1,
   "reason": "brief explanation",
   "suggestions": ["suggestion1", "suggestion2"]
-}`,
+}`;
+
+      const analysis = await this.claude.askStructured<QualityAnalysis>(
+        (config.prompt as string) || defaultPrompt,
         context.readme
       );
 

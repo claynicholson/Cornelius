@@ -23,8 +23,9 @@ program
   .command("review <url>")
   .description("Review a single GitHub repository")
   .option("-p, --preset <name>", "Review preset to use", "default")
+  .option("-u, --url <playableUrl>", "Playable URL for deployed site verification")
   .option("--no-ai", "Disable AI-powered checks")
-  .action(async (url: string, opts: { preset: string; ai: boolean }) => {
+  .action(async (url: string, opts: { preset: string; ai: boolean; url?: string }) => {
     printBanner();
 
     if (!isValidGitHubUrl(url)) {
@@ -42,6 +43,7 @@ program
         ghProxyApiKey: process.env.GH_PROXY_API_KEY,
         anthropicApiKey: opts.ai ? process.env.ANTHROPIC_API_KEY : undefined,
         preset: opts.preset,
+        playableUrl: opts.url,
       });
 
       spinner.stop();

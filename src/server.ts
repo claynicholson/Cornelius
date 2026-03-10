@@ -320,7 +320,7 @@ function resolvePreset(
 
 // ── Single review ──────────────────────────────────────────
 app.post("/api/review", async (req, res) => {
-  const { url, preset, hoursReported, journalCount, journal } = req.body;
+  const { url, preset, hoursReported, journalCount, journal, playableUrl } = req.body;
 
   if (!url || !isValidGitHubUrl(url)) {
     res.status(400).json({ error: "Invalid GitHub URL" });
@@ -347,6 +347,7 @@ app.post("/api/review", async (req, res) => {
           journalCount != null ? parseInt(journalCount, 10) : undefined,
         journal: journal || undefined,
       },
+      playableUrl: playableUrl || undefined,
     });
 
     res.json(result);
@@ -555,6 +556,24 @@ app.get("/api/checks", (_req, res) => {
         name: "Code Quality Overview",
         description:
           "AI assessment of code structure, effort, and originality",
+        type: "ai",
+        configOptions: [
+          { key: "severity", type: "select", options: ["fail", "warning"] },
+        ],
+      },
+      {
+        id: "url_alive",
+        name: "Playable URL Alive",
+        description:
+          "Checks that a deployed website URL is accessible and serves a real application",
+        type: "ai",
+        configOptions: [],
+      },
+      {
+        id: "deep_code_review",
+        name: "Deep Code Review",
+        description:
+          "Deep AI-powered code review assessing originality, shipped status, and code quality (~$0.50 budget)",
         type: "ai",
         configOptions: [
           { key: "severity", type: "select", options: ["fail", "warning"] },

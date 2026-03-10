@@ -122,6 +122,7 @@ class WorkerPool {
         anthropicApiKey: this.options.anthropicApiKey,
         preset: task.row.program_preset || this.options.preset,
         hourContext,
+        playableUrl: task.row.playable_url,
       },
     });
   }
@@ -195,6 +196,7 @@ async function processSingleThreaded(
           journalCount: row.journal_count,
           journal: row.journal,
         },
+        playableUrl: row.playable_url,
       };
 
       const result = await reviewRepository(row.github_url, reviewOpts);

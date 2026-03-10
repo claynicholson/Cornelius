@@ -31,6 +31,7 @@ export async function readCsv(filePath: string): Promise<BatchRow[]> {
             hours_reported: hoursRaw ? parseFloat(hoursRaw) : undefined,
             journal_count: journalCountRaw ? parseInt(journalCountRaw, 10) : undefined,
             journal: row.journal || row.journal_text || row.journal_content,
+            playable_url: row.playable_url || row.playableUrl || row.deployed_url || row.live_url,
           });
         }
       })

@@ -51,6 +51,8 @@ export interface CheckConfig {
   enabled: boolean;
   required: boolean;
   severity?: "fail" | "warning";
+  prompt?: string;
+  url?: string;
   [key: string]: unknown;
 }
 
@@ -64,6 +66,8 @@ export interface Check {
 export interface PresetConfig {
   name: string;
   projectType: string;
+  instructions?: string;
+  maxBudget?: number;
   checks: Record<string, CheckConfig>;
 }
 
@@ -78,6 +82,7 @@ export interface BatchRow {
   hours_reported?: number;
   journal_count?: number;
   journal?: string;
+  playable_url?: string;
 }
 
 export interface BatchResult {

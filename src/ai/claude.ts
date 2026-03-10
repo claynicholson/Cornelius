@@ -17,17 +17,32 @@ function calcCost(model: string, inputTokens: number, outputTokens: number): num
   return (inputTokens * p.input + outputTokens * p.output) / 1_000_000;
 }
 
+export class BudgetExceededError extends Error {
+  constructor(currentCost: number, maxBudget: number) {
+    super(`Token budget exceeded: $${currentCost.toFixed(4)} >= $${maxBudget.toFixed(4)}`);
+    this.name = "BudgetExceededError";
+  }
+}
+
 export class ClaudeClient {
   private client: Anthropic;
   private model: string;
+  private maxBudget?: number;
   /** Accumulated usage across all calls in this client instance */
   totalUsage: TokenUsage = { inputTokens: 0, outputTokens: 0, cost: 0 };
   /** Number of API calls made */
   callCount = 0;
 
-  constructor(apiKey?: string, model?: string) {
+  constructor(apiKey?: string, model?: string, maxBudget?: number) {
     this.client = new Anthropic({ apiKey });
     this.model = model || "claude-sonnet-4-20250514";
+    this.maxBudget = maxBudget;
+  }
+
+  private checkBudget(): void {
+    if (this.maxBudget != null && this.totalUsage.cost >= this.maxBudget) {
+      throw new BudgetExceededError(this.totalUsage.cost, this.maxBudget);
+    }
   }
 
   private trackUsage(response: Anthropic.Message): TokenUsage {
@@ -43,10 +58,11 @@ export class ClaudeClient {
     return { inputTokens, outputTokens, cost };
   }
 
-  async ask(prompt: string, content: string): Promise<string> {
+  async ask(prompt: string, content: string, maxTokens?: number): Promise<string> {
+    this.checkBudget();
     const response = await this.client.messages.create({
       model: this.model,
-      max_tokens: 1024,
+      max_tokens: maxTokens || 1024,
       messages: [
         {
           role: "user",
@@ -66,11 +82,13 @@ export class ClaudeClient {
 
   async askStructured<T>(
     prompt: string,
-    content: string
+    content: string,
+    maxTokens?: number
   ): Promise<T> {
+    this.checkBudget();
     const response = await this.client.messages.create({
       model: this.model,
-      max_tokens: 1024,
+      max_tokens: maxTokens || 1024,
       messages: [
         {
           role: "user",

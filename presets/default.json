@@ -1,6 +1,7 @@
 {
   "name": "Default",
   "projectType": "hardware",
+  "instructions": "hardware",
   "checks": {
     "github_link_works": {
       "enabled": true,
