@@ -13,7 +13,13 @@ import { PackageManagerCheck } from "./packageManager.js";
 import { LicensePresentCheck } from "./licensePresent.js";
 import { CodeQualityCheck } from "./codeQuality.js";
 import { UrlAliveCheck } from "./urlAlive.js";
+import { WebsiteMoleCheck } from "./websiteMole.js";
+import { TemplateDetectionCheck } from "./templateDetection.js";
+import { AiCodeDetectionCheck } from "./aiCodeDetection.js";
+import { EffortVerificationCheck } from "./effortVerification.js";
 import { DeepCodeReviewCheck } from "./deepCodeReview.js";
+import { GitForensicsCheck } from "./gitForensics.js";
+import { RepoMetadataCheck } from "./repoMetadata.js";
 
 export function createChecks(claude?: ClaudeClient): Check[] {
   return [
@@ -30,7 +36,13 @@ export function createChecks(claude?: ClaudeClient): Check[] {
     new LicensePresentCheck(),
     new CodeQualityCheck(claude),
     new UrlAliveCheck(claude),
+    new WebsiteMoleCheck(claude),
+    new TemplateDetectionCheck(),
+    new AiCodeDetectionCheck(claude),
+    new EffortVerificationCheck(claude),
     new DeepCodeReviewCheck(claude),
+    new RepoMetadataCheck(),
+    new GitForensicsCheck(claude),
   ];
 }
 
@@ -48,5 +60,11 @@ export {
   LicensePresentCheck,
   CodeQualityCheck,
   UrlAliveCheck,
+  WebsiteMoleCheck,
+  TemplateDetectionCheck,
+  AiCodeDetectionCheck,
+  EffortVerificationCheck,
   DeepCodeReviewCheck,
+  GitForensicsCheck,
+  RepoMetadataCheck,
 };

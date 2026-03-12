@@ -1,0 +1,76 @@
+{
+  "name": "Hardware Strict",
+  "projectType": "hardware",
+  "instructions": "hardware",
+  "maxBudget": 0.55,
+  "checks": {
+    "github_link_works": {
+      "enabled": true,
+      "required": true
+    },
+    "readme_present": {
+      "enabled": true,
+      "required": true
+    },
+    "readme_quality": {
+      "enabled": true,
+      "required": true,
+      "severity": "fail"
+    },
+    "readme_has_project_image": {
+      "enabled": true,
+      "required": true,
+      "minimum_image_count": 2
+    },
+    "three_d_files_present": {
+      "enabled": true,
+      "required": true,
+      "allowed_extensions": [".stl", ".step", ".stp", ".3mf", ".f3d", ".fcstd", ".scad"],
+      "minimum_file_count": 1
+    },
+    "pcb_files_present": {
+      "enabled": true,
+      "required": true,
+      "allowed_ecad_tools": ["kicad", "easyeda", "eagle", "altium"],
+      "require_source_design_files": true
+    },
+    "bom_present_if_required": {
+      "enabled": true,
+      "required": true,
+      "minimum_columns": ["part", "quantity", "value"]
+    },
+    "source_code_present": {
+      "enabled": true,
+      "required": false,
+      "severity": "warning",
+      "minimum_file_count": 1
+    },
+    "gitignore_present": {
+      "enabled": true,
+      "required": true
+    },
+    "package_manager_present": {
+      "enabled": false,
+      "required": false
+    },
+    "license_present": {
+      "enabled": true,
+      "required": false,
+      "severity": "warning"
+    },
+    "code_quality_overview": {
+      "enabled": true,
+      "required": false,
+      "severity": "warning"
+    },
+    "url_alive": {
+      "enabled": false,
+      "required": false
+    },
+    "deep_code_review": {
+      "enabled": true,
+      "required": false,
+      "severity": "warning"
+    }
+  }
+}

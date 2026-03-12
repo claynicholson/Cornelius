@@ -1,1241 +1,692 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Cornelius - YSWS Review Engine</title>
-  <style>
-    :root {
-      --bg: #0d1117;
-      --surface: #161b22;
-      --border: #30363d;
-      --text: #e6edf3;
-      --text-dim: #8b949e;
-      --accent: #f0c000;
-      --green: #3fb950;
-      --red: #f85149;
-      --yellow: #d29922;
-      --blue: #58a6ff;
-      --purple: #bc8cff;
-    }
-
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-
-    body {
-      font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
-      background: var(--bg);
-      color: var(--text);
-      min-height: 100vh;
-    }
-
-    .container { max-width: 900px; margin: 0 auto; padding: 2rem; }
-
-    .logo {
-      text-align: center;
-      padding: 2rem 0;
-      color: var(--accent);
-      font-size: 0.7rem;
-      line-height: 1.2;
-      white-space: pre;
-    }
-
-    .subtitle {
-      text-align: center;
-      color: var(--text-dim);
-      margin-bottom: 2rem;
-      font-size: 0.85rem;
-    }
-
-    .subtitle strong { color: var(--text); font-size: 1.1rem; }
-
-    .panel {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 1.5rem;
-      margin-bottom: 1.5rem;
-    }
-
-    .panel h2 {
-      font-size: 0.85rem;
-      color: var(--accent);
-      text-transform: uppercase;
-      letter-spacing: 2px;
-      margin-bottom: 1rem;
-      border-bottom: 1px solid var(--border);
-      padding-bottom: 0.5rem;
-    }
-
-    .input-row {
-      display: flex;
-      gap: 0.5rem;
-      margin-bottom: 1rem;
-    }
-
-    .input-row:last-child { margin-bottom: 0; }
-
-    input[type="text"], input[type="password"], input[type="number"], select {
-      flex: 1;
-      padding: 0.6rem 1rem;
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-radius: 4px;
-      color: var(--text);
-      font-family: inherit;
-      font-size: 0.85rem;
-    }
-
-    input:focus, select:focus, textarea:focus {
-      outline: none;
-      border-color: var(--accent);
-    }
-
-    button {
-      padding: 0.6rem 1.5rem;
-      background: var(--accent);
-      color: var(--bg);
-      border: none;
-      border-radius: 4px;
-      font-family: inherit;
-      font-weight: bold;
-      cursor: pointer;
-      font-size: 0.85rem;
-      transition: opacity 0.2s;
-      white-space: nowrap;
-    }
-
-    button:hover { opacity: 0.85; }
-    button:disabled { opacity: 0.5; cursor: not-allowed; }
-
-    .btn-secondary {
-      background: var(--surface);
-      color: var(--text);
-      border: 1px solid var(--border);
-    }
-
-    .btn-danger {
-      background: rgba(248,81,73,0.15);
-      color: var(--red);
-      border: 1px solid var(--red);
-    }
-
-    .btn-small {
-      padding: 0.3rem 0.8rem;
-      font-size: 0.75rem;
-    }
-
-    .status-badge {
-      display: inline-block;
-      padding: 2px 8px;
-      border-radius: 3px;
-      font-size: 0.75rem;
-      font-weight: bold;
-      text-transform: uppercase;
-    }
-
-    .status-pass { background: rgba(63,185,80,0.15); color: var(--green); border: 1px solid var(--green); }
-    .status-fail { background: rgba(248,81,73,0.15); color: var(--red); border: 1px solid var(--red); }
-    .status-warning { background: rgba(210,153,34,0.15); color: var(--yellow); border: 1px solid var(--yellow); }
-    .status-error { background: rgba(248,81,73,0.15); color: var(--red); border: 1px solid var(--red); }
-    .status-skipped { background: rgba(139,148,158,0.15); color: var(--text-dim); border: 1px solid var(--border); }
-
-    .check-item {
-      padding: 0.75rem;
-      border-bottom: 1px solid var(--border);
-      display: flex;
-      align-items: flex-start;
-      gap: 1rem;
-    }
-
-    .check-item:last-child { border-bottom: none; }
-    .check-info { flex: 1; }
-    .check-name { font-weight: bold; font-size: 0.85rem; }
-    .check-reason { color: var(--text-dim); font-size: 0.8rem; margin-top: 0.25rem; }
-    .check-evidence { color: var(--text-dim); font-size: 0.75rem; margin-top: 0.25rem; font-style: italic; }
-    .ai-tag { color: var(--purple); font-size: 0.7rem; margin-left: 0.5rem; }
-
-    .summary-bar {
-      display: flex;
-      gap: 1.5rem;
-      padding: 1rem;
-      background: var(--bg);
-      border-radius: 4px;
-      margin-bottom: 1rem;
-      justify-content: center;
-    }
-
-    .summary-item { text-align: center; }
-    .summary-number { font-size: 1.5rem; font-weight: bold; }
-    .summary-label { font-size: 0.7rem; color: var(--text-dim); text-transform: uppercase; }
-
-    .spinner {
-      display: inline-block;
-      width: 16px;
-      height: 16px;
-      border: 2px solid var(--border);
-      border-top-color: var(--accent);
-      border-radius: 50%;
-      animation: spin 0.8s linear infinite;
-      margin-right: 0.5rem;
-    }
-
-    @keyframes spin { to { transform: rotate(360deg); } }
-
-    .hidden { display: none; }
-
-    .overall-status {
-      text-align: center;
-      padding: 1rem;
-      font-size: 1.2rem;
-      font-weight: bold;
-      border-radius: 4px;
-      margin-bottom: 1rem;
-    }
-
-    .overall-pass { background: rgba(63,185,80,0.1); color: var(--green); }
-    .overall-fail { background: rgba(248,81,73,0.1); color: var(--red); }
-
-    .health { font-size: 0.75rem; color: var(--text-dim); text-align: center; margin-top: 2rem; }
-    .health .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 4px; }
-    .dot-green { background: var(--green); }
-    .dot-red { background: var(--red); }
-
-    .cost-bar {
-      display: flex;
-      gap: 1.5rem;
-      padding: 0.75rem 1rem;
-      background: var(--bg);
-      border-radius: 4px;
-      margin-bottom: 1rem;
-      justify-content: center;
-      font-size: 0.8rem;
-      color: var(--text-dim);
-    }
-    .cost-bar .cost-value { color: var(--accent); font-weight: bold; }
-    .cost-session {
-      text-align: center;
-      font-size: 0.75rem;
-      color: var(--text-dim);
-      margin-top: 0.5rem;
-    }
-    .cost-session .cost-value { color: var(--accent); font-weight: bold; }
-
-    .file-input-wrapper { position: relative; display: inline-block; }
-    .file-input-wrapper input[type="file"] { display: none; }
-    .file-label {
-      display: inline-block;
-      padding: 0.6rem 1rem;
-      background: var(--bg);
-      border: 1px dashed var(--border);
-      border-radius: 4px;
-      cursor: pointer;
-      color: var(--text-dim);
-      font-size: 0.85rem;
-    }
-    .file-label:hover { border-color: var(--accent); }
-
-    .hour-panel {
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-radius: 4px;
-      padding: 1rem;
-      margin-bottom: 1rem;
-    }
-
-    .hour-header { display: flex; align-items: center; gap: 1rem; margin-bottom: 0.75rem; }
-    .hour-estimate { font-size: 1.8rem; font-weight: bold; color: var(--accent); }
-    .hour-estimate-label { font-size: 0.7rem; color: var(--text-dim); text-transform: uppercase; }
-    .hour-justification { color: var(--text-dim); font-size: 0.85rem; line-height: 1.5; font-style: italic; }
-
-    .optional-fields { margin-top: 0.5rem; }
-    .optional-fields summary {
-      color: var(--text-dim);
-      font-size: 0.8rem;
-      cursor: pointer;
-      margin-bottom: 0.5rem;
-    }
-    .optional-fields summary:hover { color: var(--text); }
-
-    textarea {
-      width: 100%;
-      padding: 0.6rem 1rem;
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-radius: 4px;
-      color: var(--text);
-      font-family: inherit;
-      font-size: 0.85rem;
-      resize: vertical;
-      min-height: 60px;
-    }
-
-    .small-input {
-      width: 100px;
-      padding: 0.6rem 1rem;
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-radius: 4px;
-      color: var(--text);
-      font-family: inherit;
-      font-size: 0.85rem;
-    }
-
-    .small-input:focus { outline: none; border-color: var(--accent); }
-
-    /* ── Auth & Settings styles ──────────────── */
-    .user-bar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 1.5rem;
-      padding: 0.75rem 1rem;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      font-size: 0.8rem;
-    }
-
-    .user-info {
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-    }
-
-    .user-avatar {
-      width: 28px;
-      height: 28px;
-      border-radius: 50%;
-      background: var(--accent);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: var(--bg);
-      font-weight: bold;
-      font-size: 0.75rem;
-    }
-
-    .login-panel {
-      text-align: center;
-      padding: 3rem 2rem;
-    }
-
-    .login-panel p {
-      color: var(--text-dim);
-      margin-bottom: 1.5rem;
-      font-size: 0.85rem;
-    }
-
-    .login-btn {
-      padding: 0.8rem 2rem;
-      font-size: 1rem;
-      background: var(--accent);
-      color: var(--bg);
-    }
-
-    .token-field {
-      display: flex;
-      gap: 0.5rem;
-      align-items: center;
-      margin-bottom: 0.75rem;
-    }
-
-    .token-field label {
-      width: 140px;
-      font-size: 0.8rem;
-      color: var(--text-dim);
-      flex-shrink: 0;
-    }
-
-    .token-field input { flex: 1; }
-
-    .token-hint {
-      font-size: 0.75rem;
-      color: var(--text-dim);
-      padding: 0.25rem 0.5rem;
-      background: var(--bg);
-      border-radius: 3px;
-      border: 1px solid var(--border);
-    }
-
-    .token-saved {
-      color: var(--green);
-      font-size: 0.75rem;
-    }
-
-    /* ── Preset Builder ────────────────────── */
-    .preset-list {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.5rem;
-      margin-bottom: 1rem;
-    }
-
-    .preset-chip {
-      padding: 0.4rem 0.8rem;
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-radius: 4px;
-      font-size: 0.8rem;
-      cursor: pointer;
-      color: var(--text-dim);
-      transition: all 0.2s;
-    }
-
-    .preset-chip:hover { border-color: var(--accent); color: var(--text); }
-    .preset-chip.active { border-color: var(--accent); color: var(--accent); background: rgba(240,192,0,0.1); }
-    .preset-chip .chip-type { font-size: 0.65rem; color: var(--text-dim); margin-left: 0.25rem; }
-
-    .check-config {
-      padding: 0.75rem;
-      border: 1px solid var(--border);
-      border-radius: 4px;
-      margin-bottom: 0.5rem;
-      background: var(--bg);
-    }
-
-    .check-config-header {
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-      margin-bottom: 0.5rem;
-    }
-
-    .check-config-header label {
-      font-size: 0.85rem;
-      font-weight: bold;
-      flex: 1;
-    }
-
-    .check-config-desc {
-      font-size: 0.75rem;
-      color: var(--text-dim);
-      margin-bottom: 0.5rem;
-    }
-
-    .check-config-options {
-      display: flex;
-      gap: 1rem;
-      flex-wrap: wrap;
-      font-size: 0.8rem;
-    }
-
-    .check-config-options label {
-      color: var(--text-dim);
-      font-size: 0.75rem;
-    }
-
-    .toggle {
-      position: relative;
-      width: 36px;
-      height: 20px;
-      flex-shrink: 0;
-    }
-
-    .toggle input {
-      opacity: 0;
-      width: 0;
-      height: 0;
-    }
-
-    .toggle-slider {
-      position: absolute;
-      cursor: pointer;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background: var(--border);
-      border-radius: 20px;
-      transition: 0.2s;
-    }
-
-    .toggle-slider:before {
-      content: "";
-      position: absolute;
-      height: 14px;
-      width: 14px;
-      left: 3px;
-      bottom: 3px;
-      background: var(--text);
-      border-radius: 50%;
-      transition: 0.2s;
-    }
-
-    .toggle input:checked + .toggle-slider { background: var(--accent); }
-    .toggle input:checked + .toggle-slider:before { transform: translateX(16px); }
-
-    .tabs {
-      display: flex;
-      gap: 0;
-      margin-bottom: 1.5rem;
-      border-bottom: 1px solid var(--border);
-    }
-
-    .tab {
-      padding: 0.6rem 1.2rem;
-      background: none;
-      border: none;
-      color: var(--text-dim);
-      font-family: inherit;
-      font-size: 0.85rem;
-      cursor: pointer;
-      border-bottom: 2px solid transparent;
-      transition: all 0.2s;
-      font-weight: normal;
-    }
-
-    .tab:hover { color: var(--text); }
-    .tab.active { color: var(--accent); border-bottom-color: var(--accent); font-weight: bold; }
-
-    .tab-content { display: none; }
-    .tab-content.active { display: block; }
-
-    .inline-flex { display: flex; align-items: center; gap: 0.5rem; }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cornelius - YSWS Review Engine</title>
+<style>
+:root{--bg:#0d1117;--surface:#161b22;--surface2:#1c2129;--border:#30363d;--text:#e6edf3;--text-dim:#8b949e;--accent:#f0c000;--green:#3fb950;--red:#f85149;--yellow:#d29922;--blue:#58a6ff;--purple:#bc8cff}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'JetBrains Mono','Fira Code','Cascadia Code',monospace;background:var(--bg);color:var(--text);min-height:100vh}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
+::-webkit-scrollbar{width:8px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
+
+/* Header */
+.header{height:52px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 16px;position:fixed;top:0;left:0;right:0;z-index:100}
+.header-left{display:flex;align-items:center;gap:12px}
+.hamburger{display:none;background:none;border:none;color:var(--text);font-size:1.4rem;cursor:pointer;padding:4px}
+.logo-text{font-weight:700;font-size:1rem;color:var(--accent);letter-spacing:3px}
+.header-right{display:flex;align-items:center;gap:12px}
+.user-info{display:flex;align-items:center;gap:8px;font-size:.8rem;color:var(--text-dim)}
+.user-info img{width:28px;height:28px;border-radius:50%}
+.btn{padding:6px 16px;background:var(--accent);color:var(--bg);border:none;border-radius:6px;font-family:inherit;font-weight:700;font-size:.8rem;cursor:pointer;transition:all .2s}
+.btn:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(240,192,0,.3)}
+.btn:active{transform:translateY(0)}
+.btn-sm{padding:4px 12px;font-size:.75rem}
+.btn-outline{background:transparent;border:1px solid var(--border);color:var(--text)}
+.btn-outline:hover{border-color:var(--accent);color:var(--accent);box-shadow:none}
+.btn-danger{background:var(--red)}
+.btn-danger:hover{box-shadow:0 4px 12px rgba(248,81,73,.3)}
+.btn-green{background:var(--green)}
+.btn-green:hover{box-shadow:0 4px 12px rgba(63,185,80,.3)}
+
+/* Sidebar */
+.sidebar{position:fixed;top:52px;left:0;width:220px;height:calc(100vh - 52px);background:var(--surface);border-right:1px solid var(--border);padding:12px 0;overflow-y:auto;transition:transform .3s;z-index:90}
+.nav-item{display:flex;align-items:center;gap:10px;padding:10px 20px;color:var(--text-dim);font-size:.82rem;cursor:pointer;transition:all .15s;border-left:3px solid transparent}
+.nav-item:hover{color:var(--text);background:var(--surface2)}
+.nav-item.active{color:var(--accent);border-left-color:var(--accent);background:var(--surface2)}
+.nav-icon{font-size:1rem;width:20px;text-align:center}
+.nav-label{white-space:nowrap}
+.sidebar-divider{height:1px;background:var(--border);margin:8px 16px}
+
+/* Main */
+.main{margin-left:220px;margin-top:52px;padding:24px;min-height:calc(100vh - 52px)}
+.page{display:none;animation:fadeIn .3s}
+.page.active{display:block}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+
+/* Mobile */
+@media(max-width:768px){
+.hamburger{display:block}
+.sidebar{transform:translateX(-100%)}
+.sidebar.open{transform:translateX(0)}
+.main{margin-left:0}
+.sidebar-overlay{display:none;position:fixed;inset:0;top:52px;background:rgba(0,0,0,.5);z-index:89}
+.sidebar-overlay.open{display:block}
+}
+
+/* Cards & Forms */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:20px;transition:all .2s}
+.card:hover{border-color:var(--accent);transform:translateY(-2px);box-shadow:0 4px 20px rgba(0,0,0,.3)}
+.card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px;margin:16px 0}
+.stat-card{text-align:center;padding:24px}
+.stat-val{font-size:2rem;font-weight:700;color:var(--accent)}
+.stat-label{font-size:.75rem;color:var(--text-dim);margin-top:4px;text-transform:uppercase;letter-spacing:1px}
+.form-group{margin-bottom:14px}
+.form-group label{display:block;font-size:.75rem;color:var(--text-dim);margin-bottom:4px;text-transform:uppercase;letter-spacing:1px}
+input[type="text"],input[type="password"],input[type="number"],input[type="url"],select,textarea{width:100%;padding:8px 12px;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:inherit;font-size:.82rem;transition:border-color .2s}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent)}
+textarea{resize:vertical;min-height:60px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+
+/* Spinner */
+.spinner{display:inline-block;width:40px;height:40px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-box{text-align:center;padding:40px}
+.loading-box p{margin-top:12px;color:var(--text-dim);font-size:.85rem}
+
+/* Trust Gauge */
+.gauge-wrap{display:flex;flex-direction:column;align-items:center;margin:20px 0}
+.gauge-svg{width:180px;height:180px}
+.gauge-label{font-size:.8rem;color:var(--text-dim);margin-top:8px;text-transform:uppercase;letter-spacing:1px}
+.trust-bars{margin:16px 0}
+.trust-bar-row{display:flex;align-items:center;gap:8px;margin-bottom:8px;font-size:.78rem}
+.trust-bar-name{width:160px;color:var(--text-dim);text-align:right;flex-shrink:0}
+.trust-bar-track{flex:1;height:8px;background:var(--bg);border-radius:4px;overflow:hidden}
+.trust-bar-fill{height:100%;border-radius:4px;transition:width 1s ease}
+.trust-bar-val{width:36px;font-weight:700;font-size:.75rem}
+
+/* Badges */
+.badge{display:inline-block;padding:3px 10px;border-radius:12px;font-size:.7rem;font-weight:700;margin:2px}
+.badge-critical{background:rgba(248,81,73,.15);color:var(--red);border:1px solid rgba(248,81,73,.3)}
+.badge-warning{background:rgba(210,153,34,.15);color:var(--yellow);border:1px solid rgba(210,153,34,.3)}
+.badge-info{background:rgba(88,166,255,.15);color:var(--blue);border:1px solid rgba(88,166,255,.3)}
+.badge-positive{background:rgba(63,185,80,.15);color:var(--green);border:1px solid rgba(63,185,80,.3)}
+
+/* Check Cards */
+.check-card{background:var(--surface2);border:1px solid var(--border);border-radius:6px;margin-bottom:8px;overflow:hidden}
+.check-header{display:flex;align-items:center;gap:8px;padding:10px 14px;cursor:pointer;font-size:.82rem;transition:background .15s}
+.check-header:hover{background:var(--surface)}
+.check-icon{font-size:.9rem}
+.check-name{flex:1;font-weight:600}
+.check-conf{font-size:.7rem;color:var(--text-dim)}
+.check-body{padding:0 14px 12px;font-size:.78rem;color:var(--text-dim);display:none;border-top:1px solid var(--border)}
+.check-body.open{display:block;padding-top:10px}
+.evidence-list{margin:6px 0 0 16px;list-style:disc}
+.evidence-list li{margin-bottom:3px}
+
+/* Progress bar */
+.progress-track{width:100%;height:20px;background:var(--bg);border-radius:10px;overflow:hidden;margin:12px 0}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--green));border-radius:10px;transition:width .5s;display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:700;color:var(--bg);min-width:30px}
+
+/* Drag & Drop */
+.drop-zone{border:2px dashed var(--border);border-radius:8px;padding:40px;text-align:center;color:var(--text-dim);cursor:pointer;transition:all .2s}
+.drop-zone:hover,.drop-zone.dragover{border-color:var(--accent);color:var(--accent);background:rgba(240,192,0,.05)}
+
+/* Table */
+.tbl{width:100%;border-collapse:collapse;font-size:.78rem;margin:12px 0}
+.tbl th,.tbl td{padding:8px 12px;text-align:left;border-bottom:1px solid var(--border)}
+.tbl th{color:var(--text-dim);font-size:.7rem;text-transform:uppercase;letter-spacing:1px;background:var(--surface2)}
+.tbl tr:hover td{background:var(--surface2)}
+
+/* Toggle */
+.toggle{position:relative;width:36px;height:20px;cursor:pointer}
+.toggle input{display:none}
+.toggle-track{position:absolute;inset:0;background:var(--border);border-radius:10px;transition:background .2s}
+.toggle input:checked+.toggle-track{background:var(--accent)}
+.toggle-thumb{position:absolute;top:2px;left:2px;width:16px;height:16px;background:#fff;border-radius:50%;transition:transform .2s}
+.toggle input:checked~.toggle-thumb{transform:translateX(16px)}
+
+/* Skeleton */
+.skeleton{background:linear-gradient(90deg,var(--surface2) 25%,var(--border) 50%,var(--surface2) 75%);background-size:200%;animation:shimmer 1.5s infinite;border-radius:6px}
+@keyframes shimmer{0%{background-position:200%}100%{background-position:-200%}}
+
+/* Toast */
+.toast-container{position:fixed;bottom:20px;right:20px;z-index:200;display:flex;flex-direction:column;gap:8px}
+.toast{padding:10px 16px;border-radius:8px;font-size:.78rem;font-family:inherit;animation:slideIn .3s;max-width:360px;display:flex;align-items:center;gap:8px;box-shadow:0 4px 16px rgba(0,0,0,.4)}
+.toast-success{background:var(--green);color:#000}
+.toast-error{background:var(--red);color:#fff}
+.toast-info{background:var(--blue);color:#000}
+@keyframes slideIn{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
+
+/* Landing */
+.landing{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:calc(100vh - 52px);text-align:center;padding:20px}
+.landing pre{color:var(--accent);font-size:.55rem;line-height:1.15;margin-bottom:24px}
+.landing h2{font-size:1.1rem;color:var(--text-dim);margin-bottom:24px;max-width:500px;font-weight:400}
+.features{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:32px;text-align:left;font-size:.8rem}
+.features span{color:var(--accent);margin-right:6px}
+.btn-big{padding:12px 32px;font-size:1rem;border-radius:8px}
+
+/* Section headers */
+.section-title{font-size:1.1rem;font-weight:700;margin-bottom:16px;display:flex;align-items:center;gap:8px}
+.section-title .icon{color:var(--accent)}
+.section-sub{font-size:.8rem;color:var(--text-dim);margin-bottom:16px}
+
+/* Misc */
+.flex{display:flex}.flex-wrap{flex-wrap:wrap}.gap-8{gap:8px}.gap-12{gap:12px}.gap-16{gap:16px}
+.mt-12{margin-top:12px}.mt-16{margin-top:16px}.mt-24{margin-top:24px}
+.mb-12{margin-bottom:12px}.mb-16{margin-bottom:16px}
+.text-center{text-align:center}
+.text-dim{color:var(--text-dim)}
+.text-sm{font-size:.78rem}
+.health-dot{width:10px;height:10px;border-radius:50%;display:inline-block}
+.health-ok{background:var(--green)}
+.health-err{background:var(--red)}
+.hidden{display:none!important}
+.summary-box{background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:14px;margin:12px 0;font-size:.82rem;line-height:1.6;white-space:pre-wrap}
+.cost-box{display:inline-block;padding:4px 12px;background:var(--surface2);border-radius:4px;font-size:.75rem;color:var(--text-dim);margin-top:8px}
+</style>
 </head>
 <body>
-  <div class="container">
-    <pre class="logo">
- ╔═╗╔═╗╦═╗╔╗╔╔═╗╦  ╦╦ ╦╔═╗
- ║  ║ ║╠╦╝║║║║╣ ║  ║║ ║╚═╗
- ╚═╝╚═╝╩╚═╝╚╝╚═╝╩═╝╩╚═╝╚═╝
-    </pre>
-    <div class="subtitle">
-      <strong>CORNELIUS</strong><br>
-      Hack Club YSWS Submission Reviewer
-    </div>
-
-    <!-- Login Panel (shown when not authenticated) -->
-    <div id="loginPanel" class="panel login-panel hidden">
-      <p>Sign in with your Hack Club account to configure your own API tokens and review presets.</p>
-      <button class="login-btn" onclick="doLogin()">Sign in with Hack Club</button>
-    </div>
-
-    <!-- User Bar (shown when authenticated) -->
-    <div id="userBar" class="user-bar hidden">
-      <div class="user-info">
-        <div class="user-avatar" id="userAvatar">?</div>
-        <span id="userName">User</span>
-        <span style="color:var(--text-dim); font-size:0.75rem" id="userEmail"></span>
-      </div>
-      <button class="btn-secondary btn-small" onclick="doLogout()">Sign out</button>
-    </div>
-
-    <!-- Tabs (shown when authenticated) -->
-    <div id="mainTabs" class="tabs hidden">
-      <button class="tab active" data-tab="review" onclick="switchTab('review')">Review</button>
-      <button class="tab" data-tab="settings" onclick="switchTab('settings')">Settings</button>
-      <button class="tab" data-tab="presets" onclick="switchTab('presets')">Presets</button>
-    </div>
-
-    <!-- Tab: Review ──────────────────────────── -->
-    <div id="tab-review" class="tab-content active">
-      <!-- Single Review -->
-      <div class="panel">
-        <h2>Review Repository</h2>
-        <div class="input-row">
-          <input type="text" id="repoUrl" placeholder="https://github.com/owner/repo">
-          <select id="preset"></select>
-          <button id="reviewBtn" onclick="doReview()">Review</button>
-        </div>
-        <details class="optional-fields">
-          <summary>Hour/Journal Data (optional)</summary>
-          <div class="input-row" style="margin-top: 0.5rem;">
-            <input type="number" class="small-input" id="hoursReported" placeholder="Hours" step="0.1" min="0">
-            <input type="number" class="small-input" id="journalCount" placeholder="# Journals" step="1" min="0">
-          </div>
-          <textarea id="journalText" placeholder="Paste journal entries here..."></textarea>
-        </details>
-      </div>
-
-      <!-- Batch Review -->
-      <div class="panel">
-        <h2>Batch Review</h2>
-        <div class="input-row">
-          <div class="file-input-wrapper">
-            <label class="file-label" for="csvFile" id="csvLabel">Choose CSV file...</label>
-            <input type="file" id="csvFile" accept=".csv" onchange="updateFileLabel(this)">
-          </div>
-          <button onclick="doBatch()">Upload & Review</button>
-        </div>
-      </div>
-
-      <!-- Loading -->
-      <div id="loading" class="panel hidden">
-        <div style="text-align:center; padding: 1rem;">
-          <span class="spinner"></span>
-          <span id="loadingText">Scanning repository...</span>
-        </div>
-      </div>
-
-      <!-- Results -->
-      <div id="results" class="hidden">
-        <div id="overallStatus" class="overall-status"></div>
-        <div class="summary-bar" id="summaryBar"></div>
-        <div id="costPanel" class="hidden">
-          <div class="cost-bar" id="costBar"></div>
-          <div class="cost-session" id="costSession"></div>
-        </div>
-
-        <div id="hourPanel" class="panel hidden">
-          <h2>Hour Estimate</h2>
-          <div class="hour-panel">
-            <div class="hour-header">
-              <div>
-                <div class="hour-estimate" id="hourEstimate">--</div>
-                <div class="hour-estimate-label">Estimated Hours</div>
-              </div>
-            </div>
-            <div class="hour-justification" id="hourJustification"></div>
-          </div>
-        </div>
-
-        <div class="panel">
-          <h2>Check Results</h2>
-          <div id="checkList"></div>
-        </div>
-
-        <div id="aiPanel" class="panel hidden">
-          <h2>AI Summary</h2>
-          <p id="aiSummary" style="color: var(--text-dim); font-size: 0.85rem;"></p>
-          <div id="fixes" style="margin-top: 0.75rem;"></div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Tab: Settings ────────────────────────── -->
-    <div id="tab-settings" class="tab-content">
-      <div class="panel">
-        <h2>API Tokens</h2>
-        <p style="color:var(--text-dim); font-size:0.8rem; margin-bottom:1rem;">
-          Your tokens are stored server-side in your session. They are used when running reviews instead of the server defaults.
-        </p>
-
-        <div class="token-field">
-          <label>GitHub API Token</label>
-          <input type="password" id="ghTokenInput" placeholder="ghp_xxxxxxxxxxxx">
-          <span id="ghTokenStatus"></span>
-        </div>
-        <div class="token-field">
-          <label>Claude AI Token</label>
-          <input type="password" id="aiTokenInput" placeholder="sk-ant-xxxxxxxxxxxx">
-          <span id="aiTokenStatus"></span>
-        </div>
-
-        <div style="margin-top:1rem; display:flex; gap:0.5rem;">
-          <button onclick="saveTokens()">Save Tokens</button>
-          <button class="btn-secondary" onclick="clearTokens()">Clear All</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Tab: Presets ─────────────────────────── -->
-    <div id="tab-presets" class="tab-content">
-      <div class="panel">
-        <h2>Review Presets</h2>
-        <p style="color:var(--text-dim); font-size:0.8rem; margin-bottom:1rem;">
-          Create custom review configurations. Choose which checks to run and how strict they should be.
-        </p>
-
-        <div style="margin-bottom:1rem;">
-          <span style="font-size:0.75rem; color:var(--text-dim); text-transform:uppercase; letter-spacing:1px;">Your Presets</span>
-          <div class="preset-list" id="presetList"></div>
-          <button class="btn-small" onclick="newPreset()">+ New Preset</button>
-        </div>
-      </div>
-
-      <!-- Preset Editor -->
-      <div id="presetEditor" class="panel hidden">
-        <h2 id="presetEditorTitle">New Preset</h2>
-        <div class="input-row">
-          <input type="text" id="presetName" placeholder="Preset name (e.g. My Hardware Review)">
-          <select id="presetType">
-            <option value="hardware">Hardware</option>
-            <option value="software">Software</option>
-            <option value="custom">Custom</option>
-          </select>
-        </div>
-
-        <div style="margin-top:0.5rem; margin-bottom:0.75rem;">
-          <button class="btn-small btn-secondary" onclick="loadFromBuiltIn()">Copy from built-in...</button>
-        </div>
-
-        <div id="checkConfigs"></div>
-
-        <div style="margin-top:1rem; display:flex; gap:0.5rem;">
-          <button onclick="savePreset()">Save Preset</button>
-          <button class="btn-secondary" onclick="cancelPreset()">Cancel</button>
-          <button class="btn-danger btn-small" id="deletePresetBtn" onclick="deletePreset()" style="margin-left:auto;">Delete</button>
-        </div>
-      </div>
-    </div>
-
-    <div style="text-align:center; margin-top: 1.5rem;">
-      <a href="/docs" style="color:var(--accent); font-size:0.8rem; text-decoration:none; border-bottom: 1px solid var(--border); padding-bottom: 2px;">API Documentation</a>
-    </div>
-
-    <div class="health" id="health"></div>
-  </div>
-
-  <script>
-    // ── State ──────────────────────────────────
-    let currentUser = null;
-    let allChecks = [];
-    let allPresets = { builtIn: [], custom: [] };
-    let editingPresetKey = null;
-    let sessionTotalCost = 0;
-    let sessionCallCount = 0;
-
-    // ── Init ──────────────────────────────────
-    async function init() {
-      try {
-        const [authRes, healthRes, checksRes] = await Promise.all([
-          fetch('/auth/me'),
-          fetch('/api/health'),
-          fetch('/api/checks'),
-        ]);
-
-        // Health
-        if (healthRes.ok) {
-          const h = await healthRes.json();
-          const gh = h.github ? '<span class="dot dot-green"></span>GitHub' : '<span class="dot dot-red"></span>GitHub';
-          const ai = h.ai ? '<span class="dot dot-green"></span>AI' : '<span class="dot dot-red"></span>AI';
-          document.getElementById('health').innerHTML = `${gh} &nbsp; ${ai} &nbsp; v${h.version}`;
-        }
-
-        // Checks metadata
-        if (checksRes.ok) {
-          const data = await checksRes.json();
-          allChecks = data.checks;
-        }
-
-        // Auth
-        if (authRes.ok) {
-          currentUser = await authRes.json();
-          showAuthenticatedUI();
-        } else {
-          showLoginUI();
-        }
-      } catch {
-        showLoginUI();
-        document.getElementById('health').innerHTML = '<span class="dot dot-red"></span>Server offline';
-      }
-    }
-
-    // ── Auth UI ───────────────────────────────
-    function showLoginUI() {
-      document.getElementById('loginPanel').classList.remove('hidden');
-      document.getElementById('userBar').classList.add('hidden');
-      document.getElementById('mainTabs').classList.add('hidden');
-      // Still show the review tab for non-authenticated users
-      document.getElementById('tab-review').classList.add('active');
-      document.getElementById('tab-review').style.display = 'block';
-      loadPresetSelector();
-    }
-
-    function showAuthenticatedUI() {
-      document.getElementById('loginPanel').classList.add('hidden');
-      document.getElementById('userBar').classList.remove('hidden');
-      document.getElementById('mainTabs').classList.remove('hidden');
-
-      // User info
-      const initial = (currentUser.name || currentUser.email || '?')[0].toUpperCase();
-      document.getElementById('userAvatar').textContent = initial;
-      document.getElementById('userName').textContent = currentUser.name || 'User';
-      document.getElementById('userEmail').textContent = currentUser.email || '';
-
-      loadSettings();
-      loadPresets();
-      loadPresetSelector();
-    }
-
-    function doLogin() {
-      window.location.href = '/auth/login';
-    }
-
-    function doLogout() {
-      window.location.href = '/auth/logout';
-    }
-
-    // ── Tab switching ─────────────────────────
-    function switchTab(tab) {
-      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-      document.querySelectorAll('.tab-content').forEach(t => {
-        t.classList.remove('active');
-        t.style.display = 'none';
-      });
-      document.querySelector(`.tab[data-tab="${tab}"]`).classList.add('active');
-      const content = document.getElementById(`tab-${tab}`);
-      content.classList.add('active');
-      content.style.display = 'block';
-
-      if (tab === 'presets') loadPresets();
-      if (tab === 'settings') loadSettings();
-    }
-
-    // ── Settings ──────────────────────────────
-    async function loadSettings() {
-      if (!currentUser) return;
-      try {
-        const res = await fetch('/api/settings');
-        if (!res.ok) return;
-        const data = await res.json();
-
-        document.getElementById('ghTokenStatus').innerHTML = data.hasGhToken
-          ? `<span class="token-saved">Saved ${data.ghApiTokenHint}</span>`
-          : '';
-        document.getElementById('aiTokenStatus').innerHTML = data.hasAnthropicKey
-          ? `<span class="token-saved">Saved ${data.anthropicApiKeyHint}</span>`
-          : '';
-      } catch {}
-    }
-
-    async function saveTokens() {
-      const ghApiToken = document.getElementById('ghTokenInput').value.trim();
-      const anthropicApiKey = document.getElementById('aiTokenInput').value.trim();
-
-      const body = {};
-      if (ghApiToken) body.ghApiToken = ghApiToken;
-      if (anthropicApiKey) body.anthropicApiKey = anthropicApiKey;
-
-      if (Object.keys(body).length === 0) return;
-
-      try {
-        const res = await fetch('/api/settings', {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(body),
-        });
-        if (res.ok) {
-          document.getElementById('ghTokenInput').value = '';
-          document.getElementById('aiTokenInput').value = '';
-          loadSettings();
-          // Refresh health to reflect new token status
-          fetch('/api/health').then(r => r.json()).then(h => {
-            const gh = h.github ? '<span class="dot dot-green"></span>GitHub' : '<span class="dot dot-red"></span>GitHub';
-            const ai = h.ai ? '<span class="dot dot-green"></span>AI' : '<span class="dot dot-red"></span>AI';
-            document.getElementById('health').innerHTML = `${gh} &nbsp; ${ai} &nbsp; v${h.version}`;
-          });
-        }
-      } catch {}
-    }
-
-    async function clearTokens() {
-      try {
-        await fetch('/api/settings', {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ ghApiToken: '', anthropicApiKey: '' }),
-        });
-        loadSettings();
-      } catch {}
-    }
-
-    // ── Presets ───────────────────────────────
-    async function loadPresets() {
-      try {
-        const res = await fetch('/api/presets');
-        if (!res.ok) return;
-        allPresets = await res.json();
-        renderPresetList();
-        loadPresetSelector();
-      } catch {}
-    }
-
-    function renderPresetList() {
-      const el = document.getElementById('presetList');
-      if (allPresets.custom.length === 0) {
-        el.innerHTML = '<span style="color:var(--text-dim); font-size:0.8rem;">No custom presets yet.</span>';
-        return;
-      }
-
-      el.innerHTML = allPresets.custom.map(name => `
-        <span class="preset-chip" onclick="editPreset('${name}')">${name} <span class="chip-type">custom</span></span>
-      `).join('');
-    }
-
-    async function loadPresetSelector() {
-      const select = document.getElementById('preset');
-      if (!select) return;
-
-      // Start with built-in presets
-      let html = '';
-
-      // Try to fetch presets list
-      try {
-        const res = await fetch('/api/presets');
-        if (res.ok) {
-          const data = await res.json();
-          allPresets = data;
-
-          if (data.builtIn.length > 0) {
-            html += '<optgroup label="Built-in">';
-            data.builtIn.forEach(p => {
-              const label = p.charAt(0).toUpperCase() + p.slice(1).replace(/-/g, ' ');
-              html += `<option value="${p}">${label}</option>`;
-            });
-            html += '</optgroup>';
-          }
-
-          if (data.custom.length > 0) {
-            html += '<optgroup label="Custom">';
-            data.custom.forEach(p => {
-              html += `<option value="${p}">${p}</option>`;
-            });
-            html += '</optgroup>';
-          }
-        }
-      } catch {}
-
-      if (!html) {
-        html = `
-          <option value="default">Default</option>
-          <option value="hardware-default">Hardware</option>
-          <option value="blueprint">Blueprint</option>
-        `;
-      }
-
-      select.innerHTML = html;
-    }
-
-    // ── Preset Editor ─────────────────────────
-    function newPreset() {
-      editingPresetKey = null;
-      document.getElementById('presetEditorTitle').textContent = 'New Preset';
-      document.getElementById('presetName').value = '';
-      document.getElementById('presetType').value = 'hardware';
-      document.getElementById('deletePresetBtn').classList.add('hidden');
-      renderCheckConfigs({});
-      document.getElementById('presetEditor').classList.remove('hidden');
-    }
-
-    async function editPreset(name) {
-      editingPresetKey = name;
-      document.getElementById('presetEditorTitle').textContent = 'Edit Preset';
-      document.getElementById('deletePresetBtn').classList.remove('hidden');
-
-      try {
-        const res = await fetch(`/api/presets/${name}`);
-        if (!res.ok) return;
-        const data = await res.json();
-        const preset = data.preset;
-
-        document.getElementById('presetName').value = preset.name || name;
-        document.getElementById('presetType').value = preset.projectType || 'hardware';
-        renderCheckConfigs(preset.checks || {});
-        document.getElementById('presetEditor').classList.remove('hidden');
-      } catch {}
-    }
-
-    async function loadFromBuiltIn() {
-      const name = prompt('Enter built-in preset name (default, hardware-default, blueprint):');
-      if (!name) return;
-
-      try {
-        const res = await fetch(`/api/presets/${name.trim()}`);
-        if (!res.ok) { alert('Preset not found'); return; }
-        const data = await res.json();
-        renderCheckConfigs(data.preset.checks || {});
-      } catch {}
-    }
-
-    function renderCheckConfigs(existingChecks) {
-      const container = document.getElementById('checkConfigs');
-      container.innerHTML = allChecks.map(check => {
-        const conf = existingChecks[check.id] || {};
-        const enabled = conf.enabled !== false;
-        const required = conf.required !== false;
-
-        return `
-          <div class="check-config" data-check="${check.id}">
-            <div class="check-config-header">
-              <label class="toggle">
-                <input type="checkbox" data-field="enabled" ${enabled ? 'checked' : ''}>
-                <span class="toggle-slider"></span>
-              </label>
-              <label>${check.name} ${check.type === 'ai' ? '<span class="ai-tag">[AI]</span>' : ''}</label>
-              <div class="inline-flex">
-                <label style="font-size:0.75rem; color:var(--text-dim);">Required</label>
-                <label class="toggle">
-                  <input type="checkbox" data-field="required" ${required ? 'checked' : ''}>
-                  <span class="toggle-slider"></span>
-                </label>
-              </div>
-            </div>
-            <div class="check-config-desc">${check.description}</div>
-            ${check.configOptions.length > 0 ? `
-              <div class="check-config-options">
-                ${check.configOptions.map(opt => {
-                  const val = conf[opt.key] !== undefined ? conf[opt.key] : opt.default;
-                  if (opt.type === 'select') {
-                    return `<div><label>${opt.key}</label><br>
-                      <select data-field="${opt.key}" style="font-size:0.75rem; padding:0.25rem; background:var(--surface); color:var(--text); border:1px solid var(--border); border-radius:3px;">
-                        ${opt.options.map(o => `<option value="${o}" ${val === o ? 'selected' : ''}>${o}</option>`).join('')}
-                      </select></div>`;
-                  } else if (opt.type === 'boolean') {
-                    return `<div class="inline-flex"><label>${opt.key}</label>
-                      <label class="toggle"><input type="checkbox" data-field="${opt.key}" ${val ? 'checked' : ''}><span class="toggle-slider"></span></label></div>`;
-                  } else if (opt.type === 'number') {
-                    return `<div><label>${opt.key}</label><br>
-                      <input type="number" data-field="${opt.key}" value="${val || ''}" style="width:60px; font-size:0.75rem; padding:0.25rem; background:var(--surface); color:var(--text); border:1px solid var(--border); border-radius:3px;"></div>`;
-                  } else {
-                    return `<div><label>${opt.key}</label><br>
-                      <input type="text" data-field="${opt.key}" value="${val || ''}" style="width:200px; font-size:0.75rem; padding:0.25rem; background:var(--surface); color:var(--text); border:1px solid var(--border); border-radius:3px;"></div>`;
-                  }
-                }).join('')}
-              </div>
-            ` : ''}
-          </div>
-        `;
-      }).join('');
-    }
-
-    function gatherPresetData() {
-      const name = document.getElementById('presetName').value.trim();
-      const projectType = document.getElementById('presetType').value;
-      if (!name) { alert('Please enter a preset name'); return null; }
-
-      const checks = {};
-      document.querySelectorAll('.check-config').forEach(el => {
-        const id = el.dataset.check;
-        const conf = {
-          enabled: el.querySelector('[data-field="enabled"]').checked,
-          required: el.querySelector('[data-field="required"]').checked,
-        };
-
-        // Gather extra config options
-        el.querySelectorAll('[data-field]').forEach(input => {
-          const field = input.dataset.field;
-          if (field === 'enabled' || field === 'required') return;
-          if (input.type === 'checkbox') {
-            conf[field] = input.checked;
-          } else if (input.type === 'number') {
-            conf[field] = input.value ? Number(input.value) : undefined;
-          } else if (input.tagName === 'SELECT') {
-            conf[field] = input.value;
-          } else {
-            // Handle comma-separated lists (like extensions)
-            const val = input.value.trim();
-            if (val.includes(',')) {
-              conf[field] = val.split(',').map(s => s.trim()).filter(Boolean);
-            } else {
-              conf[field] = val || undefined;
-            }
-          }
-        });
-
-        checks[id] = conf;
-      });
-
-      return { name, projectType, checks };
-    }
-
-    async function savePreset() {
-      const preset = gatherPresetData();
-      if (!preset) return;
-
-      try {
-        let res;
-        if (editingPresetKey) {
-          res = await fetch(`/api/presets/${editingPresetKey}`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(preset),
-          });
-        } else {
-          res = await fetch('/api/presets', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(preset),
-          });
-        }
-
-        if (res.ok) {
-          document.getElementById('presetEditor').classList.add('hidden');
-          loadPresets();
-        } else {
-          const err = await res.json();
-          alert(err.error || 'Failed to save preset');
-        }
-      } catch (e) {
-        alert('Failed to save preset');
-      }
-    }
-
-    function cancelPreset() {
-      document.getElementById('presetEditor').classList.add('hidden');
-    }
-
-    async function deletePreset() {
-      if (!editingPresetKey) return;
-      if (!confirm(`Delete preset "${editingPresetKey}"?`)) return;
-
-      try {
-        await fetch(`/api/presets/${editingPresetKey}`, { method: 'DELETE' });
-        document.getElementById('presetEditor').classList.add('hidden');
-        loadPresets();
-      } catch {}
-    }
-
-    // ── Review ────────────────────────────────
-    function updateFileLabel(input) {
-      const label = document.getElementById('csvLabel');
-      label.textContent = input.files[0]?.name || 'Choose CSV file...';
-    }
-
-    async function doReview() {
-      const url = document.getElementById('repoUrl').value.trim();
-      const preset = document.getElementById('preset').value;
-      if (!url) return;
-
-      document.getElementById('loading').classList.remove('hidden');
-      document.getElementById('results').classList.add('hidden');
-      document.getElementById('loadingText').textContent = 'Scanning repository...';
-      document.getElementById('reviewBtn').disabled = true;
-
-      try {
-        const hoursReported = document.getElementById('hoursReported').value || undefined;
-        const journalCount = document.getElementById('journalCount').value || undefined;
-        const journal = document.getElementById('journalText').value.trim() || undefined;
-
-        const res = await fetch('/api/review', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ url, preset, hoursReported, journalCount, journal })
-        });
-        const data = await res.json();
-        if (res.ok) {
-          showResults(data);
-        } else {
-          alert('Review failed: ' + (data.error || 'Unknown error'));
-        }
-      } catch (err) {
-        alert('Review failed: ' + err.message);
-      } finally {
-        document.getElementById('loading').classList.add('hidden');
-        document.getElementById('reviewBtn').disabled = false;
-      }
-    }
-
-    async function doBatch() {
-      const input = document.getElementById('csvFile');
-      if (!input.files[0]) return;
-
-      const form = new FormData();
-      form.append('csv', input.files[0]);
-
-      document.getElementById('loading').classList.remove('hidden');
-      document.getElementById('loadingText').textContent = 'Processing batch...';
-
-      try {
-        const res = await fetch('/api/batch', { method: 'POST', body: form });
-        const { jobId } = await res.json();
-
-        const poll = setInterval(async () => {
-          const r = await fetch(`/api/batch/${jobId}`);
-          const job = await r.json();
-          document.getElementById('loadingText').textContent =
-            `Processing... ${job.completed}/${job.total}`;
-
-          if (job.status === 'complete' || job.status === 'error') {
-            clearInterval(poll);
-            document.getElementById('loading').classList.add('hidden');
-            if (job.results.length > 0) {
-              alert(`Batch complete! ${job.results.length} repos reviewed.`);
-            }
-          }
-        }, 2000);
-      } catch (err) {
-        document.getElementById('loading').classList.add('hidden');
-        alert('Batch failed: ' + err.message);
-      }
-    }
-
-    function showResults(data) {
-      document.getElementById('results').classList.remove('hidden');
-
-      const statusEl = document.getElementById('overallStatus');
-      statusEl.className = 'overall-status ' + (data.overallPass ? 'overall-pass' : 'overall-fail');
-      statusEl.textContent = data.overallPass ? 'PASSED' : 'FAILED';
-
-      const checks = data.checkResults || [];
-      const counts = {
-        pass: checks.filter(c => c.status === 'pass').length,
-        fail: checks.filter(c => c.status === 'fail' || c.status === 'error').length,
-        warn: checks.filter(c => c.status === 'warning').length,
-        skip: checks.filter(c => c.status === 'skipped').length,
-      };
-
-      document.getElementById('summaryBar').innerHTML = `
-        <div class="summary-item"><div class="summary-number" style="color:var(--green)">${counts.pass}</div><div class="summary-label">Passed</div></div>
-        <div class="summary-item"><div class="summary-number" style="color:var(--red)">${counts.fail}</div><div class="summary-label">Failed</div></div>
-        <div class="summary-item"><div class="summary-number" style="color:var(--yellow)">${counts.warn}</div><div class="summary-label">Warnings</div></div>
-        <div class="summary-item"><div class="summary-number" style="color:var(--text-dim)">${counts.skip}</div><div class="summary-label">Skipped</div></div>
-      `;
-
-      // Cost display
-      const costPanel = document.getElementById('costPanel');
-      if (data.apiCost) {
-        costPanel.classList.remove('hidden');
-        const c = data.apiCost;
-        const costPerCall = c.callCount > 0 ? (c.totalCost / c.callCount) : 0;
-        sessionTotalCost += c.totalCost;
-        sessionCallCount += c.callCount;
-
-        document.getElementById('costBar').innerHTML = `
-          <span>This review: <span class="cost-value">$${c.totalCost.toFixed(4)}</span></span>
-          <span>API calls: <span class="cost-value">${c.callCount}</span></span>
-          <span>Cost/call: <span class="cost-value">$${costPerCall.toFixed(4)}</span></span>
-          <span>Tokens: <span class="cost-value">${(c.inputTokens + c.outputTokens).toLocaleString()}</span></span>
-        `;
-        document.getElementById('costSession').innerHTML =
-          `Session total: <span class="cost-value">$${sessionTotalCost.toFixed(4)}</span> across <span class="cost-value">${sessionCallCount}</span> API calls`;
-      } else {
-        costPanel.classList.add('hidden');
-      }
-
-      const hourPanel = document.getElementById('hourPanel');
-      if (data.hourEstimate != null) {
-        hourPanel.classList.remove('hidden');
-        document.getElementById('hourEstimate').textContent = data.hourEstimate;
-        document.getElementById('hourJustification').textContent = data.hourJustification || '';
-      } else {
-        hourPanel.classList.add('hidden');
-      }
-
-      const listEl = document.getElementById('checkList');
-      listEl.innerHTML = checks.map(c => `
-        <div class="check-item">
-          <span class="status-badge status-${c.status}">${c.status}</span>
-          <div class="check-info">
-            <div class="check-name">
-              ${c.checkName}
-              ${c.required ? '<span style="color:var(--text-dim);font-size:0.7rem">(required)</span>' : '<span style="color:var(--text-dim);font-size:0.7rem">(optional)</span>'}
-              ${c.aiUsed ? '<span class="ai-tag">[AI]</span>' : ''}
-            </div>
-            <div class="check-reason">${c.reason}</div>
-            ${c.evidence.length > 0 ? '<div class="check-evidence">' + c.evidence.slice(0, 3).join(' &middot; ') + '</div>' : ''}
-          </div>
-        </div>
-      `).join('');
-
-      const aiPanel = document.getElementById('aiPanel');
-      if (data.aiSummary) {
-        aiPanel.classList.remove('hidden');
-        document.getElementById('aiSummary').textContent = data.aiSummary;
-        if (data.suggestedFixes?.length) {
-          document.getElementById('fixes').innerHTML =
-            data.suggestedFixes.map(f => `<div style="color:var(--yellow);font-size:0.8rem;">&rarr; ${f}</div>`).join('');
-        }
-      } else {
-        aiPanel.classList.add('hidden');
-      }
-    }
-
-    // Enter to submit
-    document.addEventListener('keydown', e => {
-      if (e.key === 'Enter' && e.target.id === 'repoUrl') doReview();
-    });
-
-    // Boot
-    init();
-  </script>
+<header class="header">
+<div class="header-left">
+<button class="hamburger" onclick="toggleSidebar()">&#9776;</button>
+<span class="logo-text">CORNELIUS</span>
+</div>
+<div class="header-right" id="headerRight"></div>
+</header>
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+<nav class="sidebar" id="sidebar">
+<div class="nav-item active" data-page="dashboard" onclick="navigate('dashboard')"><span class="nav-icon">&#9632;</span><span class="nav-label">Dashboard</span></div>
+<div class="nav-item" data-page="review" onclick="navigate('review')"><span class="nav-icon">&#128269;</span><span class="nav-label">Review</span></div>
+<div class="nav-item" data-page="batch" onclick="navigate('batch')"><span class="nav-icon">&#128230;</span><span class="nav-label">Batch</span></div>
+<div class="nav-item" data-page="presets" onclick="navigate('presets')"><span class="nav-icon">&#9881;</span><span class="nav-label">Presets</span></div>
+<div class="nav-item" data-page="settings" onclick="navigate('settings')"><span class="nav-icon">&#128295;</span><span class="nav-label">Settings</span></div>
+<div class="sidebar-divider"></div>
+<a class="nav-item" href="/docs/" target="_blank"><span class="nav-icon">&#128214;</span><span class="nav-label">Docs</span></a>
+</nav>
+
+<main class="main" id="mainContent">
+<!-- Landing -->
+<div class="page" id="page-landing">
+<div class="landing">
+<pre>
+  ██████╗ ██████╗ ██████╗ ███╗   ██╗███████╗██╗     ██╗██╗   ██╗███████╗
+ ██╔════╝██╔═══██╗██╔══██╗████╗  ██║██╔════╝██║     ██║██║   ██║██╔════╝
+ ██║     ██║   ██║██████╔╝██╔██╗ ██║█████╗  ██║     ██║██║   ██║███████╗
+ ██║     ██║   ██║██╔══██╗██║╚██╗██║██╔══╝  ██║     ██║██║   ██║╚════██║
+ ╚██████╗╚██████╔╝██║  ██║██║ ╚████║███████╗███████╗██║╚██████╔╝███████║
+  ╚═════╝ ╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═══╝╚══════╝╚══════╝╚═╝ ╚═════╝ ╚══════╝
+</pre>
+<h2>The most thorough YSWS submission reviewer ever built</h2>
+<div class="features">
+<div><span>&#10003;</span> 20+ automated checks</div>
+<div><span>&#10003;</span> AI-powered fraud detection</div>
+<div><span>&#10003;</span> Trust scoring</div>
+<div><span>&#10003;</span> Git forensics</div>
+</div>
+<button class="btn btn-big" onclick="location.href='/auth/login'">Sign in with Hack Club</button>
+</div>
+</div>
+
+<!-- Dashboard -->
+<div class="page" id="page-dashboard">
+<div class="section-title"><span class="icon">&#9632;</span> Dashboard</div>
+<p class="section-sub" id="welcomeMsg">Welcome back!</p>
+<div class="card-grid" id="statsCards">
+<div class="card stat-card"><div class="stat-val">20</div><div class="stat-label">Total Checks</div></div>
+<div class="card stat-card"><div class="stat-val">8</div><div class="stat-label">AI-Powered Checks</div></div>
+<div class="card stat-card" id="presetsCount"><div class="stat-val skeleton" style="height:2rem;width:3rem;margin:0 auto">&nbsp;</div><div class="stat-label">Presets Available</div></div>
+</div>
+<div class="flex gap-12 mt-16">
+<button class="btn" onclick="navigate('review')">&#128269; Review a Repo</button>
+<button class="btn btn-outline" onclick="navigate('batch')">&#128230; Batch Review</button>
+</div>
+<div class="card mt-24" id="healthCard">
+<div class="flex gap-8" style="align-items:center">
+<span class="health-dot" id="healthDot"></span>
+<span id="healthText" class="text-sm text-dim">Checking health...</span>
+</div>
+</div>
+</div>
+
+<!-- Review -->
+<div class="page" id="page-review">
+<div class="section-title"><span class="icon">&#128269;</span> Single Review</div>
+<div class="card" id="reviewForm">
+<div class="form-group"><label>GitHub Repository URL</label><input type="url" id="reviewUrl" placeholder="https://github.com/user/repo"></div>
+<div class="form-row">
+<div class="form-group"><label>Preset</label><select id="reviewPreset"></select></div>
+<div class="form-group"><label>Hours Reported</label><input type="number" id="reviewHours" placeholder="Optional" min="0"></div>
+</div>
+<div class="form-row">
+<div class="form-group"><label>Playable URL</label><input type="url" id="reviewPlayable" placeholder="Optional"></div>
+<div class="form-group"><label>Journal Count</label><input type="number" id="reviewJournalCount" placeholder="Optional" min="0"></div>
+</div>
+<div class="form-group"><label>Journal Text</label><textarea id="reviewJournal" placeholder="Optional journal text..."></textarea></div>
+<button class="btn mt-12" onclick="runReview()">&#9654; Run Review</button>
+</div>
+<div id="reviewLoading" class="loading-box hidden"><div class="spinner"></div><p>Analyzing repository...</p></div>
+<div id="reviewResults" class="hidden"></div>
+</div>
+
+<!-- Batch -->
+<div class="page" id="page-batch">
+<div class="section-title"><span class="icon">&#128230;</span> Batch Review</div>
+<div class="card">
+<div class="drop-zone" id="dropZone" onclick="document.getElementById('csvFile').click()">
+<input type="file" id="csvFile" accept=".csv" style="display:none" onchange="handleCsvSelect(this)">
+<p>&#128196; Drop CSV file here or click to upload</p>
+<p class="text-sm text-dim mt-12" id="csvFileName">No file selected</p>
+</div>
+<div class="form-group mt-16"><label>Preset</label><select id="batchPreset"></select></div>
+<button class="btn mt-12" onclick="startBatch()">&#9654; Start Batch</button>
+</div>
+<div id="batchProgress" class="card hidden mt-16">
+<div class="flex" style="justify-content:space-between;align-items:center"><span class="text-sm">Progress</span><span class="text-sm" id="batchPercent">0%</span></div>
+<div class="progress-track"><div class="progress-fill" id="batchBar" style="width:0%"></div></div>
+<p class="text-sm text-dim" id="batchStatus"></p>
+</div>
+<div id="batchResults" class="hidden mt-16">
+<div class="flex gap-8 mb-12"><button class="btn btn-sm btn-outline" onclick="exportBatch('csv')">Export CSV</button><button class="btn btn-sm btn-outline" onclick="exportBatch('json')">Export JSON</button></div>
+<div style="overflow-x:auto"><table class="tbl" id="batchTable"><thead><tr><th>URL</th><th>Status</th><th>Trust Score</th><th>Hours</th><th>Summary</th></tr></thead><tbody></tbody></table></div>
+</div>
+</div>
+
+<!-- Presets -->
+<div class="page" id="page-presets">
+<div class="section-title"><span class="icon">&#9881;</span> Presets</div>
+<button class="btn mb-16" onclick="showPresetForm()">+ Create Custom Preset</button>
+<div id="presetFormWrap" class="card hidden mb-16">
+<div class="form-group"><label>Name</label><input type="text" id="presetName" placeholder="my-preset"></div>
+<div class="form-group"><label>Project Type</label>
+<select id="presetType"><option value="web">Web</option><option value="game">Game</option><option value="mobile">Mobile</option><option value="hardware">Hardware</option><option value="other">Other</option></select></div>
+<div class="form-group"><label>Checks</label><div id="presetChecks" class="mt-12"></div></div>
+<div class="flex gap-8 mt-12"><button class="btn" onclick="savePreset()">Save</button><button class="btn btn-outline" onclick="hidePresetForm()">Cancel</button></div>
+</div>
+<div class="card-grid" id="presetsGrid"></div>
+</div>
+
+<!-- Settings -->
+<div class="page" id="page-settings">
+<div class="section-title"><span class="icon">&#128295;</span> Settings</div>
+<div class="card">
+<div class="form-group"><label>GitHub Proxy API Key</label><input type="password" id="settGhKey" placeholder="Enter key..."><p class="text-sm text-dim mt-12" id="settGhStatus"></p></div>
+<div class="form-group mt-16"><label>Anthropic API Key</label><input type="password" id="settAnthropicKey" placeholder="Enter key..."><p class="text-sm text-dim mt-12" id="settAnthropicStatus"></p></div>
+<button class="btn mt-16" onclick="saveSettings()">Save Settings</button>
+</div>
+</div>
+</main>
+
+<div class="toast-container" id="toasts"></div>
+
+<script>
+let currentUser=null,batchData=[],batchJobId=null;
+
+async function api(url,opts={}){
+const r=await fetch(url,{...opts,headers:{'Content-Type':'application/json',...(opts.headers||{})}});
+if(!r.ok){const e=await r.text().catch(()=>'Error');throw new Error(e)}
+return r.headers.get('content-type')?.includes('json')?r.json():r.text();
+}
+
+function toast(msg,type='info'){
+const t=document.createElement('div');
+t.className='toast toast-'+type;
+t.textContent=msg;
+document.getElementById('toasts').appendChild(t);
+setTimeout(()=>{t.style.opacity='0';t.style.transition='opacity .3s';setTimeout(()=>t.remove(),300)},3500);
+}
+
+async function init(){
+try{
+currentUser=await api('/auth/me');
+document.getElementById('headerRight').innerHTML=`<div class="user-info">${currentUser.avatar?`<img src="${currentUser.avatar}" alt="">`:''}<span>${currentUser.name||currentUser.username||'User'}</span></div><button class="btn btn-sm btn-outline" onclick="location.href='/auth/logout'">Logout</button>`;
+document.getElementById('welcomeMsg').textContent=`Welcome back, ${currentUser.name||currentUser.username||'reviewer'}!`;
+navigate('dashboard');
+loadDashboard();
+}catch{
+document.getElementById('headerRight').innerHTML='<button class="btn btn-sm" onclick="location.href=\'/auth/login\'">Sign In</button>';
+showPage('landing');
+}
+}
+
+function showPage(id){
+document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+const el=document.getElementById('page-'+id);
+if(el)el.classList.add('active');
+}
+
+function navigate(page){
+if(!currentUser&&page!=='landing'){location.href='/auth/login';return}
+document.querySelectorAll('.nav-item').forEach(n=>n.classList.toggle('active',n.dataset.page===page));
+showPage(page);
+if(page==='dashboard')loadDashboard();
+else if(page==='review')loadPresetSelect('reviewPreset');
+else if(page==='batch')loadPresetSelect('batchPreset');
+else if(page==='presets')loadPresets();
+else if(page==='settings')loadSettings();
+closeSidebar();
+}
+
+function toggleSidebar(){
+document.getElementById('sidebar').classList.toggle('open');
+document.getElementById('sidebarOverlay').classList.toggle('open');
+}
+function closeSidebar(){
+document.getElementById('sidebar').classList.remove('open');
+document.getElementById('sidebarOverlay').classList.remove('open');
+}
+
+async function loadDashboard(){
+try{
+const presets=await api('/api/presets');
+const c=document.getElementById('presetsCount');
+c.querySelector('.stat-val').className='stat-val';
+c.querySelector('.stat-val').textContent=Array.isArray(presets)?presets.length:'?';
+}catch{}
+try{
+const h=await api('/api/health');
+const dot=document.getElementById('healthDot');
+const txt=document.getElementById('healthText');
+dot.className='health-dot '+(h.status==='ok'||h.healthy?'health-ok':'health-err');
+txt.textContent=h.status==='ok'||h.healthy?'All systems operational':'Some services may be degraded';
+}catch{
+document.getElementById('healthDot').className='health-dot health-err';
+document.getElementById('healthText').textContent='Could not reach API';
+}
+}
+
+async function loadPresetSelect(id){
+const sel=document.getElementById(id);
+if(sel.options.length>1)return;
+sel.innerHTML='<option value="">Default</option>';
+try{
+const presets=await api('/api/presets');
+(Array.isArray(presets)?presets:[]).forEach(p=>{
+const name=typeof p==='string'?p:p.name;
+sel.innerHTML+=`<option value="${name}">${name}</option>`;
+});
+}catch{}
+}
+
+async function runReview(){
+const url=document.getElementById('reviewUrl').value.trim();
+if(!url){toast('Please enter a GitHub URL','error');return}
+const body={url,preset:document.getElementById('reviewPreset').value||undefined};
+const hrs=document.getElementById('reviewHours').value;
+if(hrs)body.hoursReported=Number(hrs);
+const jc=document.getElementById('reviewJournalCount').value;
+if(jc)body.journalCount=Number(jc);
+const j=document.getElementById('reviewJournal').value.trim();
+if(j)body.journal=j;
+const pu=document.getElementById('reviewPlayable').value.trim();
+if(pu)body.playableUrl=pu;
+
+document.getElementById('reviewForm').classList.add('hidden');
+document.getElementById('reviewLoading').classList.remove('hidden');
+document.getElementById('reviewResults').classList.add('hidden');
+
+try{
+const r=await api('/api/review',{method:'POST',body:JSON.stringify(body)});
+renderResults(r);
+}catch(e){
+toast('Review failed: '+e.message,'error');
+document.getElementById('reviewForm').classList.remove('hidden');
+}finally{
+document.getElementById('reviewLoading').classList.add('hidden');
+}
+}
+
+function renderResults(r){
+const el=document.getElementById('reviewResults');
+el.classList.remove('hidden');
+document.getElementById('reviewForm').classList.remove('hidden');
+
+const ts=r.trustScore||r.trust_score||{};
+const score=ts.overall??ts.score??0;
+const cat=ts.category||ts.label||getCategory(score);
+const color=score>=80?'var(--green)':score>=60?'var(--yellow)':score>=40?'var(--accent)':'var(--red)';
+const pct=score/100;
+const circumf=2*Math.PI*70;
+const offset=circumf*(1-pct);
+
+const breakdown=ts.breakdown||ts.categories||{};
+const flags=ts.flags||r.flags||[];
+const checks=r.checks||r.results||[];
+const hourEst=r.hourEstimate||r.hour_estimate||null;
+const summary=r.aiSummary||r.ai_summary||r.summary||'';
+const fixes=r.suggestedFixes||r.suggested_fixes||[];
+const cost=r.apiCost||r.api_cost||r.cost||null;
+
+let html=`<div class="card mt-16"><div class="gauge-wrap">
+<svg class="gauge-svg" viewBox="0 0 180 180">
+<circle cx="90" cy="90" r="70" fill="none" stroke="var(--border)" stroke-width="10"/>
+<circle cx="90" cy="90" r="70" fill="none" stroke="${color}" stroke-width="10"
+ stroke-dasharray="${circumf}" stroke-dashoffset="${circumf}" stroke-linecap="round"
+ transform="rotate(-90 90 90)" style="transition:stroke-dashoffset 1.5s ease">
+<animate attributeName="stroke-dashoffset" from="${circumf}" to="${offset}" dur="1.5s" fill="freeze"/>
+</circle>
+<text x="90" y="85" text-anchor="middle" fill="${color}" font-size="32" font-weight="700" font-family="inherit">${score}</text>
+<text x="90" y="105" text-anchor="middle" fill="var(--text-dim)" font-size="10" font-family="inherit">TRUST SCORE</text>
+</svg>
+<div class="gauge-label">${cat}</div>
+</div>`;
+
+if(Object.keys(breakdown).length){
+html+='<div class="trust-bars">';
+for(const[k,v]of Object.entries(breakdown)){
+const val=typeof v==='number'?v:(v?.score??0);
+const c=val>=70?'var(--green)':val>=40?'var(--yellow)':'var(--red)';
+html+=`<div class="trust-bar-row"><span class="trust-bar-name">${formatKey(k)}</span><div class="trust-bar-track"><div class="trust-bar-fill" style="width:${val}%;background:${c}"></div></div><span class="trust-bar-val" style="color:${c}">${val}</span></div>`;
+}
+html+='</div>';
+}
+
+if(flags.length){
+html+='<div class="mt-12">';
+flags.forEach(f=>{
+const sev=f.severity||f.level||'info';
+const cls=sev==='critical'?'badge-critical':sev==='warning'?'badge-warning':'badge-info';
+html+=`<span class="badge ${cls}">${f.flag||f.message||f.name||f}</span> `;
+});
+html+='</div>';
+}
+html+='</div>';
+
+if(hourEst){
+html+=`<div class="card mt-16"><div class="section-title"><span class="icon">&#9201;</span> Hour Estimate</div>
+<div class="stat-val">${hourEst.estimate??hourEst.hours??'?'} hours</div>
+<p class="text-sm text-dim mt-12">${hourEst.justification||hourEst.reasoning||''}</p></div>`;
+}
+
+if(checks.length){
+html+='<div class="mt-16"><div class="section-title"><span class="icon">&#9989;</span> Check Results</div>';
+checks.forEach((c,i)=>{
+const pass=c.passed||c.status==='pass'||c.result==='pass';
+const warn=c.status==='warning';
+const icon=pass?'<span style="color:var(--green)">&#10004;</span>':warn?'<span style="color:var(--yellow)">&#9888;</span>':'<span style="color:var(--red)">&#10008;</span>';
+const ev=c.evidence||c.details||[];
+const conf=c.confidence!=null?c.confidence:null;
+html+=`<div class="check-card"><div class="check-header" onclick="this.nextElementSibling.classList.toggle('open')">
+<span class="check-icon">${icon}</span><span class="check-name">${c.check||c.name||'Check'}</span>
+${conf!=null?`<span class="check-conf">${Math.round(conf*100)}%</span>`:''}
+</div><div class="check-body">
+<p>${c.reason||c.message||''}</p>
+${ev.length?`<ul class="evidence-list">${ev.map(e=>`<li>${typeof e==='string'?e:JSON.stringify(e)}</li>`).join('')}</ul>`:''}
+${conf!=null?`<div class="progress-track" style="height:6px;margin-top:8px"><div class="progress-fill" style="width:${conf*100}%;background:var(--blue)"></div></div>`:''}
+</div></div>`;
+});
+html+='</div>';
+}
+
+if(summary){html+=`<div class="card mt-16"><div class="section-title"><span class="icon">&#129302;</span> AI Summary</div><div class="summary-box">${esc(summary)}</div></div>`;}
+if(fixes&&fixes.length){html+=`<div class="card mt-16"><div class="section-title"><span class="icon">&#128161;</span> Suggested Fixes</div><ul style="margin-left:16px;font-size:.82rem">${fixes.map(f=>`<li style="margin-bottom:4px">${esc(typeof f==='string'?f:f.suggestion||f.fix||JSON.stringify(f))}</li>`).join('')}</ul></div>`;}
+if(cost!=null){html+=`<div class="cost-box mt-12">API Cost: $${typeof cost==='number'?cost.toFixed(4):cost}</div>`;}
+html+=`<button class="btn btn-outline mt-16" onclick="copyMarkdown()">&#128203; Copy as Markdown</button>`;
+
+el.innerHTML=html;
+el._data=r;
+}
+
+function copyMarkdown(){
+const el=document.getElementById('reviewResults');
+const r=el._data;if(!r)return;
+const ts=r.trustScore||r.trust_score||{};
+const checks=r.checks||r.results||[];
+let md=`# Review: ${r.url||''}\n\n## Trust Score: ${ts.overall??ts.score??0}/100 (${ts.category||''})\n\n`;
+if(ts.breakdown||ts.categories){md+='## Breakdown\n';for(const[k,v]of Object.entries(ts.breakdown||ts.categories||{})){md+=`- **${formatKey(k)}**: ${typeof v==='number'?v:v?.score??0}\n`}}
+if(checks.length){md+='\n## Checks\n';checks.forEach(c=>{const p=c.passed||c.status==='pass';md+=`- ${p?'PASS':'FAIL'}: **${c.check||c.name}** - ${c.reason||c.message||''}\n`})}
+const s=r.aiSummary||r.ai_summary||r.summary||'';if(s)md+=`\n## AI Summary\n${s}\n`;
+navigator.clipboard.writeText(md).then(()=>toast('Copied to clipboard!','success')).catch(()=>toast('Copy failed','error'));
+}
+
+function getCategory(s){return s>=90?'Exemplary':s>=75?'Trusted':s>=60?'Moderate':s>=40?'Suspicious':'Critical'}
+function formatKey(k){return k.replace(/([A-Z])/g,' $1').replace(/_/g,' ').replace(/^\w/,c=>c.toUpperCase()).trim()}
+function esc(s){const d=document.createElement('div');d.textContent=s;return d.innerHTML}
+
+// Batch
+function handleCsvSelect(input){
+if(input.files[0])document.getElementById('csvFileName').textContent=input.files[0].name;
+}
+
+const dz=document.getElementById('dropZone');
+if(dz){
+dz.addEventListener('dragover',e=>{e.preventDefault();dz.classList.add('dragover')});
+dz.addEventListener('dragleave',()=>dz.classList.remove('dragover'));
+dz.addEventListener('drop',e=>{
+e.preventDefault();dz.classList.remove('dragover');
+const f=e.dataTransfer.files[0];
+if(f){document.getElementById('csvFile').files=e.dataTransfer.files;document.getElementById('csvFileName').textContent=f.name}
+});
+}
+
+async function startBatch(){
+const file=document.getElementById('csvFile').files[0];
+if(!file){toast('Please select a CSV file','error');return}
+const fd=new FormData();
+fd.append('csv',file);
+const preset=document.getElementById('batchPreset').value;
+if(preset)fd.append('preset',preset);
+
+document.getElementById('batchProgress').classList.remove('hidden');
+document.getElementById('batchResults').classList.add('hidden');
+batchData=[];
+
+try{
+const r=await fetch('/api/batch',{method:'POST',body:fd});
+if(!r.ok)throw new Error(await r.text());
+const data=await r.json();
+if(data.jobId){batchJobId=data.jobId;pollBatch()}
+else{renderBatchResults(data)}
+}catch(e){toast('Batch failed: '+e.message,'error');document.getElementById('batchProgress').classList.add('hidden')}
+}
+
+async function pollBatch(){
+try{
+const r=await api('/api/batch/'+batchJobId);
+const total=r.total||r.count||0;
+const done=r.completed||r.processed||0;
+const pct=total?Math.round(done/total*100):0;
+document.getElementById('batchBar').style.width=pct+'%';
+document.getElementById('batchPercent').textContent=pct+'%';
+document.getElementById('batchStatus').textContent=`${done}/${total} reviews completed`;
+if(r.status==='completed'||r.done||done>=total){renderBatchResults(r)}
+else{setTimeout(pollBatch,2000)}
+}catch(e){toast('Polling failed: '+e.message,'error')}
+}
+
+function renderBatchResults(r){
+document.getElementById('batchProgress').classList.add('hidden');
+document.getElementById('batchResults').classList.remove('hidden');
+batchData=r.results||r.reviews||[];
+const tbody=document.querySelector('#batchTable tbody');
+tbody.innerHTML='';
+batchData.forEach(row=>{
+const ts=row.trustScore||row.trust_score||{};
+const score=ts.overall??ts.score??'-';
+const hr=row.hourEstimate||row.hour_estimate;
+const hours=hr?(hr.estimate??hr.hours??'-'):'-';
+const status=row.error?'Error':'Done';
+const sColor=row.error?'var(--red)':'var(--green)';
+tbody.innerHTML+=`<tr><td class="text-sm">${esc(row.url||'')}</td><td style="color:${sColor}">${status}</td><td>${score}</td><td>${hours}</td><td class="text-sm">${esc((row.aiSummary||row.summary||'').slice(0,80))}</td></tr>`;
+});
+}
+
+function exportBatch(fmt){
+if(!batchData.length){toast('No data to export','error');return}
+let content,mime,ext;
+if(fmt==='json'){content=JSON.stringify(batchData,null,2);mime='application/json';ext='json'}
+else{
+const rows=[['URL','Trust Score','Hours','Summary']];
+batchData.forEach(r=>{const ts=r.trustScore||r.trust_score||{};const hr=r.hourEstimate||r.hour_estimate;rows.push([r.url||'',ts.overall??ts.score??'',hr?(hr.estimate??hr.hours??''):'',r.aiSummary||r.summary||''])});
+content=rows.map(r=>r.map(c=>'"'+String(c).replace(/"/g,'""')+'"').join(',')).join('\n');
+mime='text/csv';ext='csv';
+}
+const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([content],{type:mime}));
+a.download='batch-results.'+ext;a.click();
+}
+
+// Presets
+async function loadPresets(){
+const grid=document.getElementById('presetsGrid');
+grid.innerHTML='<div class="skeleton" style="height:100px"></div><div class="skeleton" style="height:100px"></div>';
+try{
+const presets=await api('/api/presets');
+grid.innerHTML='';
+(Array.isArray(presets)?presets:[]).forEach(p=>{
+const name=typeof p==='string'?p:p.name;
+const type=p.projectType||p.type||'';
+const count=p.checks?Object.keys(p.checks).length:(p.enabledChecks||'?');
+grid.innerHTML+=`<div class="card" style="cursor:pointer" onclick="viewPreset('${name}')">
+<div style="font-weight:700;color:var(--accent)">${esc(name)}</div>
+${type?`<div class="text-sm text-dim mt-12">${type}</div>`:''}
+<div class="text-sm text-dim mt-12">${count} checks</div>
+</div>`;
+});
+}catch(e){grid.innerHTML=`<p class="text-dim">Failed to load presets</p>`}
+}
+
+async function viewPreset(name){
+try{const p=await api('/api/presets/'+encodeURIComponent(name));toast(name+': '+JSON.stringify(p).slice(0,100),'info')}catch{}
+}
+
+function showPresetForm(){
+document.getElementById('presetFormWrap').classList.remove('hidden');
+loadChecksList();
+}
+function hidePresetForm(){document.getElementById('presetFormWrap').classList.add('hidden')}
+
+async function loadChecksList(){
+const el=document.getElementById('presetChecks');
+try{
+const checks=await api('/api/checks');
+el.innerHTML='';
+(Array.isArray(checks)?checks:Object.keys(checks)).forEach(c=>{
+const name=typeof c==='string'?c:c.name||c.id;
+el.innerHTML+=`<div class="flex gap-8" style="align-items:center;margin-bottom:6px">
+<label class="toggle"><input type="checkbox" checked data-check="${name}"><div class="toggle-track"></div><div class="toggle-thumb"></div></label>
+<span class="text-sm">${name}</span></div>`;
+});
+}catch{el.innerHTML='<p class="text-dim text-sm">Could not load checks</p>'}
+}
+
+async function savePreset(){
+const name=document.getElementById('presetName').value.trim();
+if(!name){toast('Please enter a name','error');return}
+const type=document.getElementById('presetType').value;
+const checks={};
+document.querySelectorAll('#presetChecks input[type=checkbox]').forEach(cb=>{checks[cb.dataset.check]=cb.checked});
+try{
+await api('/api/presets',{method:'POST',body:JSON.stringify({name,projectType:type,checks})});
+toast('Preset created!','success');hidePresetForm();loadPresets();
+}catch(e){toast('Failed: '+e.message,'error')}
+}
+
+// Settings
+async function loadSettings(){
+try{
+const s=await api('/api/settings');
+document.getElementById('settGhStatus').textContent=s.ghApiToken||s.ghProxyConfigured?'Configured':'Not set';
+document.getElementById('settAnthropicStatus').textContent=s.anthropicApiKey||s.anthropicConfigured?'Configured':'Not set';
+}catch{}
+}
+
+async function saveSettings(){
+const body={};
+const gh=document.getElementById('settGhKey').value.trim();
+const anth=document.getElementById('settAnthropicKey').value.trim();
+if(gh)body.ghApiToken=gh;
+if(anth)body.anthropicApiKey=anth;
+try{
+await api('/api/settings',{method:'PUT',body:JSON.stringify(body)});
+toast('Settings saved!','success');loadSettings();
+document.getElementById('settGhKey').value='';
+document.getElementById('settAnthropicKey').value='';
+}catch(e){toast('Failed: '+e.message,'error')}
+}
+
+init();
+</script>
 </body>
 </html>

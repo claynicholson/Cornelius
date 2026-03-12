@@ -1,10 +1,11 @@
-import type { RepoContext, ReviewResult, CheckResult, PresetConfig } from "./types.js";
+import type { RepoContext, ReviewResult, CheckResult, PresetConfig, CommitDetail, GitForensicsData } from "./types.js";
 import { GitHubClient } from "../github/client.js";
 import { ClaudeClient } from "../ai/claude.js";
 import { parseGitHubUrl } from "../github/parser.js";
 import { createChecks } from "../checks/index.js";
 import { getCheckConfig, loadPreset } from "./preset.js";
 import { loadInstructions } from "./instructions.js";
+import { computeTrustScore, type TrustScore } from "./trustScore.js";
 
 export interface HourContext {
   hoursReported?: number;
@@ -120,6 +121,49 @@ export async function reviewRepository(
     };
   }
 
+  // Fetch git forensics data (non-blocking - failures are tolerated)
+  try {
+    const [commits, contributors, metadata, weeklyActivity] = await Promise.all([
+      github.getCommits(parsed.owner, parsed.repo, 100),
+      github.getContributors(parsed.owner, parsed.repo),
+      github.getRepoMetadata(parsed.owner, parsed.repo),
+      github.getCommitActivity(parsed.owner, parsed.repo),
+    ]);
+
+    // Fetch details for a sample of commits (first, last, and up to 8 evenly spaced)
+    const commitDetails: CommitDetail[] = [];
+    if (commits.length > 0) {
+      const sampleIndices = new Set<number>();
+      sampleIndices.add(0); // most recent
+      sampleIndices.add(commits.length - 1); // oldest
+      // Evenly spaced samples in between
+      const step = Math.max(1, Math.floor(commits.length / 8));
+      for (let i = 0; i < commits.length && sampleIndices.size < 10; i += step) {
+        sampleIndices.add(i);
+      }
+
+      const detailPromises = [...sampleIndices].map((idx) =>
+        github.getCommitDetail(parsed.owner, parsed.repo, commits[idx].sha)
+      );
+      const detailResults = await Promise.all(detailPromises);
+      for (const detail of detailResults) {
+        if (detail) commitDetails.push(detail);
+      }
+    }
+
+    const forensicsData: GitForensicsData = {
+      commits,
+      commitDetails,
+      contributors,
+      metadata,
+      weeklyActivity,
+    };
+
+    context.forensics = forensicsData;
+  } catch {
+    // Forensics data is optional - checks will skip if not available
+  }
+
   // Run checks
   const checks = createChecks(claude);
   const results: CheckResult[] = [];
@@ -181,17 +225,47 @@ export async function reviewRepository(
       ? "warning"
       : "pass";
 
+  // Compute trust score before AI summary so it can be referenced
+  const trustScore = computeTrustScore({
+    checkResults: results,
+    projectType: preset.projectType || "hardware",
+    forensics: context.forensics,
+    hourContext: options.hourContext
+      ? {
+          hoursReported: options.hourContext.hoursReported,
+          journalCount: options.hourContext.journalCount,
+        }
+      : undefined,
+  });
+
   // Generate AI summary if available
   let aiSummary: string | undefined;
   let suggestedFixes: string[] | undefined;
 
   if (claude) {
     try {
+      const trustContext = `
+Trust Score: ${trustScore.overall}/100 (${trustScore.category})
+Breakdown:
+- Code Authenticity: ${trustScore.breakdown.codeAuthenticity}/100
+- Effort Verification: ${trustScore.breakdown.effortVerification}/100
+- Project Completeness: ${trustScore.breakdown.projectCompleteness}/100
+- Deployment Status: ${trustScore.breakdown.deploymentStatus}/100
+- Development Process: ${trustScore.breakdown.developmentProcess}/100
+${trustScore.flags.length > 0 ? `\nFlags:\n${trustScore.flags.map((f) => `- [${f.severity.toUpperCase()}] ${f.message}`).join("\n")}` : ""}
+Recommendation: ${trustScore.recommendation}`;
+
       const defaultSummaryPrompt = `Based on these review results for a ${preset.projectType || "hardware"} project repository, provide a brief summary and any suggested fixes. This is a ${preset.projectType || "hardware"} project — frame your feedback accordingly.
+
+The trust score system has analyzed this project across multiple dimensions. Incorporate the trust score findings into your summary. If there are critical or warning flags, mention the specific concerns. If the trust score is low, explain what is driving it down.
+
+${trustContext}
 
 Return JSON: {"summary": "brief summary", "fixes": ["fix1", "fix2"]}`;
 
-      const summaryPrompt = instructions.summary || defaultSummaryPrompt;
+      const summaryPrompt = instructions.summary
+        ? `${instructions.summary}\n\n${trustContext}`
+        : defaultSummaryPrompt;
 
       const summaryData = await claude.askStructured<{
         summary: string;
@@ -261,6 +335,12 @@ Return JSON: {"summary": "brief summary", "fixes": ["fix1", "fix2"]}`;
 - Copy-pasting tutorial code is not verifiable work
 - Setting up a git repo should be 0.5 hours max`;
 
+      const trustScoreContext = `
+Trust Score: ${trustScore.overall}/100 (${trustScore.category})
+- Code Authenticity: ${trustScore.breakdown.codeAuthenticity}/100
+- Effort Verification: ${trustScore.breakdown.effortVerification}/100
+${trustScore.flags.filter((f) => f.severity === "critical" || f.severity === "warning").map((f) => `- [${f.severity.toUpperCase()}] ${f.message}`).join("\n")}`;
+
       const defaultHourPrompt = `You are a reviewer for Hack Club's YSWS program. You need to estimate how many hours this ${projectType} project actually took and write a human-sounding justification.
 
 ${hasHourData ? `The user self-reported ${hourCtx.hoursReported ?? "unknown"} hours across ${hourCtx.journalCount ?? "unknown"} journal entries.` : "No self-reported hours or journal were provided."}
@@ -277,6 +357,8 @@ ${isSoftware ? `- Has source code: ${projectInfo.hasSourceCode}
 - README quality: ${projectInfo.readmeQuality}
 - Overall review: ${overallPass ? "passed" : "failed"}
 
+${trustScoreContext}
+
 ${isSoftware ? softwareGuidelines : hardwareGuidelines}
 
 General rules:
@@ -284,6 +366,8 @@ General rules:
 - If journal entries are detailed and show real iteration, deflate less
 - Programming hours without detail should be deflated
 - Look for signs of inflation: large hour counts with little detail, simple tasks reported as many hours
+- IMPORTANT: If the trust score is "suspicious" or "rejected" (below 40), be much more skeptical of reported hours and deflate aggressively
+- If the trust score flags indicate single-commit project or AI-generated code, cap your estimate at the minimum for this project type
 
 Write a natural, human-sounding justification (2-4 sentences) like a real reviewer would. Be direct and specific about why you're giving those hours. Reference specific journal entries or project aspects if available. Match the tone of these example justifications - casual, honest, sometimes blunt.
 
@@ -326,6 +410,7 @@ ${JSON.stringify(results, null, 2)}`
     aiSummary,
     suggestedFixes,
     confidenceScore: Math.round(avgConfidence * 100) / 100,
+    trustScore,
     hourEstimate,
     hourJustification,
     apiCost: claude

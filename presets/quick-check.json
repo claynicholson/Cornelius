@@ -1,0 +1,68 @@
+{
+  "name": "Quick Check",
+  "projectType": "software",
+  "checks": {
+    "github_link_works": {
+      "enabled": true,
+      "required": true
+    },
+    "readme_present": {
+      "enabled": true,
+      "required": true
+    },
+    "readme_quality": {
+      "enabled": false,
+      "required": false
+    },
+    "readme_has_project_image": {
+      "enabled": false,
+      "required": false
+    },
+    "source_code_present": {
+      "enabled": true,
+      "required": true,
+      "minimum_file_count": 1
+    },
+    "gitignore_present": {
+      "enabled": true,
+      "required": false,
+      "severity": "warning"
+    },
+    "package_manager_present": {
+      "enabled": true,
+      "required": false,
+      "severity": "warning"
+    },
+    "license_present": {
+      "enabled": true,
+      "required": false,
+      "severity": "warning"
+    },
+    "code_quality_overview": {
+      "enabled": false,
+      "required": false
+    },
+    "url_alive": {
+      "enabled": false,
+      "required": false
+    },
+    "deep_code_review": {
+      "enabled": false,
+      "required": false
+    },
+    "three_d_files_present": {
+      "enabled": true,
+      "required": false,
+      "severity": "warning"
+    },
+    "pcb_files_present": {
+      "enabled": true,
+      "required": false,
+      "severity": "warning"
+    },
+    "bom_present_if_required": {
+      "enabled": false,
+      "required": false
+    }
+  }
+}

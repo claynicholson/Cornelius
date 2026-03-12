@@ -52,6 +52,58 @@ export function formatReviewResult(result: ReviewResult): string {
 
   output += `  ${chalk.green(`${passed} passed`)}  ${chalk.red(`${failed} failed`)}  ${chalk.yellow(`${warned} warnings`)}  ${chalk.gray(`${skipped} skipped`)}\n`;
 
+  // Trust Score
+  if (result.trustScore) {
+    const ts = result.trustScore;
+    const categoryColors: Record<string, typeof chalk.green> = {
+      trusted: chalk.green,
+      likely_genuine: chalk.greenBright,
+      needs_review: chalk.yellow,
+      suspicious: chalk.red,
+      rejected: chalk.bgRed.white,
+    };
+    const colorFn = categoryColors[ts.category] || chalk.white;
+
+    output += `\n  ${chalk.bold("Trust Score:")} ${colorFn(`${ts.overall}/100 (${ts.category.replace(/_/g, " ")})`)}\n`;
+
+    const barWidth = 20;
+    const categories = [
+      { label: "Code Authenticity ", score: ts.breakdown.codeAuthenticity },
+      { label: "Effort Verification", score: ts.breakdown.effortVerification },
+      { label: "Completeness       ", score: ts.breakdown.projectCompleteness },
+      { label: "Deployment Status  ", score: ts.breakdown.deploymentStatus },
+      { label: "Dev Process        ", score: ts.breakdown.developmentProcess },
+    ];
+
+    for (const cat of categories) {
+      const filled = Math.round((cat.score / 100) * barWidth);
+      const empty = barWidth - filled;
+      const barColor = cat.score >= 60 ? chalk.green : cat.score >= 40 ? chalk.yellow : chalk.red;
+      const bar = barColor("\u2588".repeat(filled)) + chalk.gray("\u2591".repeat(empty));
+      output += `    ${chalk.dim(cat.label)} ${bar} ${chalk.dim(`${cat.score}`)}\n`;
+    }
+
+    if (ts.flags.length > 0) {
+      const criticals = ts.flags.filter((f) => f.severity === "critical");
+      const warnings = ts.flags.filter((f) => f.severity === "warning");
+
+      if (criticals.length > 0) {
+        output += `\n`;
+        for (const flag of criticals) {
+          output += `    ${chalk.red.bold("!!")} ${chalk.red(flag.message)}\n`;
+        }
+      }
+      if (warnings.length > 0) {
+        if (criticals.length === 0) output += `\n`;
+        for (const flag of warnings) {
+          output += `    ${chalk.yellow("!")} ${chalk.yellow(flag.message)}\n`;
+        }
+      }
+    }
+
+    output += `\n  ${chalk.bold("Recommendation:")} ${chalk.dim(ts.recommendation)}\n`;
+  }
+
   // AI Summary
   if (result.aiSummary) {
     output += `\n  ${chalk.bold("AI Summary:")}\n`;

@@ -13,6 +13,12 @@ export function writeCsv(results: BatchResult[], outputPath: string): void {
     warnings: r.warnings.join("; "),
     review_summary: r.reviewSummary,
     confidence_score: r.confidenceScore,
+    trust_score: r.result.trustScore?.overall ?? "",
+    trust_category: r.result.trustScore?.category ?? "",
+    trust_flags: r.result.trustScore?.flags
+      .filter((f) => f.severity === "critical" || f.severity === "warning")
+      .map((f) => `[${f.severity}] ${f.message}`)
+      .join("; ") ?? "",
     hour_estimate: r.hourEstimate ?? "",
     hour_justification: r.hourJustification ?? "",
   }));

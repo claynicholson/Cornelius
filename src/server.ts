@@ -571,6 +571,47 @@ app.get("/api/checks", (_req, res) => {
         configOptions: [],
       },
       {
+        id: "website_mole",
+        name: "Website Mole (Deep Inspection)",
+        description:
+          "Deep multi-page website inspection analyzing DOM complexity, content authenticity, technology stack, and backend signals to verify genuine work",
+        type: "ai",
+        configOptions: [
+          { key: "severity", type: "select", options: ["fail", "warning"] },
+        ],
+      },
+      {
+        id: "template_detection",
+        name: "Template Detection",
+        description:
+          "Detects if a project is a framework starter/template with minimal modifications",
+        type: "rule",
+        configOptions: [
+          { key: "severity", type: "select", options: ["fail", "warning"] },
+        ],
+      },
+      {
+        id: "ai_code_detection",
+        name: "AI-Generated Code Detection",
+        description:
+          "Detects signs of AI-generated or heavily AI-assisted code using heuristics and optional AI analysis",
+        type: "ai",
+        configOptions: [
+          { key: "severity", type: "select", options: ["fail", "warning"] },
+        ],
+      },
+      {
+        id: "effort_verification",
+        name: "Effort Verification",
+        description:
+          "Cross-references code volume, complexity, dependencies, and reported hours to verify genuine development effort",
+        type: "ai",
+        configOptions: [
+          { key: "severity", type: "select", options: ["fail", "warning"] },
+          { key: "hoursReported", type: "number" },
+        ],
+      },
+      {
         id: "deep_code_review",
         name: "Deep Code Review",
         description:
@@ -580,7 +621,380 @@ app.get("/api/checks", (_req, res) => {
           { key: "severity", type: "select", options: ["fail", "warning"] },
         ],
       },
+      {
+        id: "repo_metadata",
+        name: "Repository Metadata",
+        description:
+          "Checks repository context: age, fork status, stars/forks, and flags pre-existing or popular projects",
+        type: "rule",
+        configOptions: [
+          { key: "severity", type: "select", options: ["fail", "warning"] },
+        ],
+      },
+      {
+        id: "git_forensics",
+        name: "Git History Forensics",
+        description:
+          "Analyzes commit patterns, code churn, contributor history, and development timeline to verify genuine development effort",
+        type: "ai",
+        configOptions: [
+          { key: "severity", type: "select", options: ["fail", "warning"] },
+        ],
+      },
     ],
+  });
+});
+
+// ── API Documentation (OpenAPI-like schema) ───────────────
+app.get("/api/docs", (_req, res) => {
+  res.json({
+    openapi: "3.0.0",
+    info: {
+      title: "Cornelius API",
+      version: "1.0.0",
+      description:
+        "REST API for the Cornelius YSWS submission review engine. Review GitHub repositories for project completeness using rule-based checks and AI-powered analysis.",
+    },
+    servers: [
+      { url: "http://localhost:3000", description: "Local development" },
+    ],
+    paths: {
+      "/api/review": {
+        post: {
+          summary: "Review a single GitHub repository",
+          description:
+            "Runs all enabled checks from the selected preset against the given repository and returns detailed results.",
+          requestBody: {
+            required: true,
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  required: ["url"],
+                  properties: {
+                    url: {
+                      type: "string",
+                      description: "GitHub repository URL",
+                    },
+                    preset: {
+                      type: "string",
+                      default: "default",
+                      description: "Preset name",
+                    },
+                    playableUrl: {
+                      type: "string",
+                      description: "Deployed URL for url_alive check",
+                    },
+                    hoursReported: {
+                      type: "number",
+                      description: "Self-reported hours",
+                    },
+                    journalCount: {
+                      type: "number",
+                      description: "Number of journal entries",
+                    },
+                    journal: {
+                      type: "string",
+                      description: "Journal text content",
+                    },
+                  },
+                },
+              },
+            },
+          },
+          responses: {
+            "200": {
+              description:
+                "Review completed. Check overallPass for result.",
+            },
+            "400": { description: "Invalid or missing GitHub URL" },
+            "500": { description: "Server error during review" },
+          },
+        },
+      },
+      "/api/batch": {
+        post: {
+          summary: "Batch review repositories from CSV",
+          description:
+            "Upload a CSV file with a github_url column. Returns a job ID to poll for progress.",
+          requestBody: {
+            required: true,
+            content: {
+              "multipart/form-data": {
+                schema: {
+                  type: "object",
+                  required: ["csv"],
+                  properties: {
+                    csv: {
+                      type: "string",
+                      format: "binary",
+                      description: "CSV file",
+                    },
+                    preset: { type: "string", default: "default" },
+                  },
+                },
+              },
+            },
+          },
+          responses: {
+            "200": { description: "Batch job created, returns jobId" },
+            "400": { description: "No CSV file uploaded" },
+          },
+        },
+      },
+      "/api/batch/{jobId}": {
+        get: {
+          summary: "Poll batch job status",
+          parameters: [
+            {
+              name: "jobId",
+              in: "path",
+              required: true,
+              schema: { type: "string" },
+            },
+          ],
+          responses: {
+            "200": {
+              description: "Job status with results when complete",
+            },
+            "404": { description: "Job not found" },
+          },
+        },
+      },
+      "/api/checks": {
+        get: {
+          summary: "List all available checks",
+          description:
+            "Returns check IDs, descriptions, types (rule/ai), and config options.",
+          responses: { "200": { description: "List of checks" } },
+        },
+      },
+      "/api/presets": {
+        get: {
+          summary: "List available presets",
+          description:
+            "Returns built-in and user custom preset names.",
+          responses: { "200": { description: "Preset lists" } },
+        },
+      },
+      "/api/presets/{name}": {
+        get: {
+          summary: "Get preset configuration",
+          parameters: [
+            {
+              name: "name",
+              in: "path",
+              required: true,
+              schema: { type: "string" },
+            },
+          ],
+          responses: {
+            "200": { description: "Preset config with source" },
+            "404": { description: "Preset not found" },
+          },
+        },
+        post: {
+          summary: "Create custom preset",
+          description:
+            "Requires authentication. Body must include name and checks.",
+          responses: {
+            "200": { description: "Preset created" },
+            "400": { description: "Missing name or checks" },
+            "401": { description: "Not authenticated" },
+          },
+        },
+        put: {
+          summary: "Update custom preset",
+          description: "Requires authentication.",
+          responses: {
+            "200": { description: "Preset updated" },
+            "401": { description: "Not authenticated" },
+          },
+        },
+        delete: {
+          summary: "Delete custom preset",
+          description: "Requires authentication.",
+          responses: {
+            "200": { description: "Preset deleted" },
+            "401": { description: "Not authenticated" },
+          },
+        },
+      },
+      "/api/settings": {
+        get: {
+          summary: "Get user API key settings",
+          description:
+            "Returns masked API key hints. Requires authentication.",
+          responses: {
+            "200": { description: "Settings with masked key hints" },
+            "401": { description: "Not authenticated" },
+          },
+        },
+        put: {
+          summary: "Update user API keys",
+          description: "Requires authentication.",
+          requestBody: {
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    ghApiToken: { type: "string" },
+                    anthropicApiKey: { type: "string" },
+                  },
+                },
+              },
+            },
+          },
+          responses: {
+            "200": { description: "Settings updated" },
+            "401": { description: "Not authenticated" },
+          },
+        },
+      },
+      "/api/health": {
+        get: {
+          summary: "Health check",
+          description:
+            "Returns server status and whether API keys are configured.",
+          responses: { "200": { description: "Health status" } },
+        },
+      },
+      "/api/docs": {
+        get: {
+          summary: "API documentation schema",
+          description: "Returns this OpenAPI-like schema.",
+          responses: { "200": { description: "OpenAPI schema" } },
+        },
+      },
+      "/auth/login": {
+        get: {
+          summary: "Start Hack Club OAuth login",
+          responses: {
+            "302": { description: "Redirect to Hack Club OAuth" },
+          },
+        },
+      },
+      "/auth/logout": {
+        get: {
+          summary: "Logout and destroy session",
+          responses: { "302": { description: "Redirect to /" } },
+        },
+      },
+      "/auth/me": {
+        get: {
+          summary: "Get current authenticated user",
+          responses: {
+            "200": { description: "User info" },
+            "401": { description: "Not authenticated" },
+          },
+        },
+      },
+    },
+    components: {
+      schemas: {
+        ReviewResult: {
+          type: "object",
+          properties: {
+            githubUrl: { type: "string" },
+            status: {
+              type: "string",
+              enum: ["pass", "fail", "warning", "error"],
+            },
+            overallPass: { type: "boolean" },
+            checkResults: {
+              type: "array",
+              items: { $ref: "#/components/schemas/CheckResult" },
+            },
+            warnings: { type: "array", items: { type: "string" } },
+            errors: { type: "array", items: { type: "string" } },
+            aiSummary: { type: "string", nullable: true },
+            suggestedFixes: {
+              type: "array",
+              items: { type: "string" },
+              nullable: true,
+            },
+            confidenceScore: { type: "number" },
+            hourEstimate: { type: "number", nullable: true },
+            hourJustification: { type: "string", nullable: true },
+            apiCost: {
+              type: "object",
+              nullable: true,
+              properties: {
+                inputTokens: { type: "number" },
+                outputTokens: { type: "number" },
+                totalCost: { type: "number" },
+                callCount: { type: "number" },
+              },
+            },
+          },
+        },
+        CheckResult: {
+          type: "object",
+          properties: {
+            checkName: { type: "string" },
+            required: { type: "boolean" },
+            status: {
+              type: "string",
+              enum: ["pass", "fail", "warning", "error", "skipped"],
+            },
+            confidence: { type: "number" },
+            evidence: { type: "array", items: { type: "string" } },
+            reason: { type: "string" },
+            aiUsed: { type: "boolean" },
+          },
+        },
+        BatchResult: {
+          type: "object",
+          properties: {
+            submissionId: { type: "string" },
+            githubUrl: { type: "string" },
+            projectType: { type: "string" },
+            overallStatus: { type: "string" },
+            passedChecks: {
+              type: "array",
+              items: { type: "string" },
+            },
+            failedChecks: {
+              type: "array",
+              items: { type: "string" },
+            },
+            warnings: { type: "array", items: { type: "string" } },
+            reviewSummary: { type: "string" },
+            confidenceScore: { type: "number" },
+            hourEstimate: { type: "number", nullable: true },
+            result: { $ref: "#/components/schemas/ReviewResult" },
+          },
+        },
+        PresetConfig: {
+          type: "object",
+          required: ["name", "checks"],
+          properties: {
+            name: { type: "string" },
+            projectType: {
+              type: "string",
+              enum: ["hardware", "software"],
+            },
+            instructions: { type: "string", nullable: true },
+            maxBudget: { type: "number", nullable: true },
+            checks: {
+              type: "object",
+              additionalProperties: {
+                type: "object",
+                properties: {
+                  enabled: { type: "boolean" },
+                  required: { type: "boolean" },
+                  severity: {
+                    type: "string",
+                    enum: ["fail", "warning"],
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
   });
 });
 

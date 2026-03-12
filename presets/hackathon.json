@@ -1,0 +1,71 @@
+{
+  "name": "Hackathon",
+  "projectType": "software",
+  "instructions": "software",
+  "maxBudget": 0.45,
+  "checks": {
+    "github_link_works": {
+      "enabled": true,
+      "required": true
+    },
+    "readme_present": {
+      "enabled": true,
+      "required": true
+    },
+    "readme_quality": {
+      "enabled": true,
+      "required": false,
+      "severity": "warning"
+    },
+    "readme_has_project_image": {
+      "enabled": true,
+      "required": false,
+      "severity": "warning"
+    },
+    "source_code_present": {
+      "enabled": true,
+      "required": true,
+      "minimum_file_count": 3
+    },
+    "gitignore_present": {
+      "enabled": true,
+      "required": false,
+      "severity": "warning"
+    },
+    "package_manager_present": {
+      "enabled": true,
+      "required": false,
+      "severity": "warning"
+    },
+    "license_present": {
+      "enabled": false,
+      "required": false
+    },
+    "code_quality_overview": {
+      "enabled": true,
+      "required": false,
+      "severity": "warning"
+    },
+    "url_alive": {
+      "enabled": true,
+      "required": false,
+      "severity": "warning"
+    },
+    "deep_code_review": {
+      "enabled": true,
+      "required": true
+    },
+    "three_d_files_present": {
+      "enabled": false,
+      "required": false
+    },
+    "pcb_files_present": {
+      "enabled": false,
+      "required": false
+    },
+    "bom_present_if_required": {
+      "enabled": false,
+      "required": false
+    }
+  }
+}

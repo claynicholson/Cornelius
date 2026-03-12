@@ -1,3 +1,5 @@
+import type { TrustScore } from "./trustScore.js";
+
 export interface CheckResult {
   checkName: string;
   required: boolean;
@@ -20,6 +22,7 @@ export interface ReviewResult {
   submissionId?: string;
   participantName?: string;
   confidenceScore: number;
+  trustScore?: TrustScore;
   hourEstimate?: number;
   hourJustification?: string;
   apiCost?: {
@@ -45,6 +48,7 @@ export interface RepoContext {
   readme: string | null;
   defaultBranch: string;
   getFile: (path: string) => Promise<string | null>;
+  forensics?: GitForensicsData;
 }
 
 export interface CheckConfig {
@@ -98,6 +102,83 @@ export interface BatchResult {
   hourEstimate?: number;
   hourJustification?: string;
   result: ReviewResult;
+}
+
+// ── Git Forensics Types ─────────────────────────────────
+
+export interface CommitInfo {
+  sha: string;
+  message: string;
+  authorName: string;
+  authorEmail: string;
+  authorLogin?: string;
+  date: string; // ISO 8601
+  committerName: string;
+  committerEmail: string;
+}
+
+export interface CommitDetail {
+  sha: string;
+  message: string;
+  authorName: string;
+  authorEmail: string;
+  authorLogin?: string;
+  date: string;
+  stats: {
+    additions: number;
+    deletions: number;
+    total: number;
+  };
+  files: Array<{
+    filename: string;
+    status: string; // "added" | "modified" | "removed" | "renamed"
+    additions: number;
+    deletions: number;
+    changes: number;
+  }>;
+}
+
+export interface Contributor {
+  login: string;
+  contributions: number;
+  type: string;
+}
+
+export interface RepoMetadata {
+  createdAt: string;
+  pushedAt: string;
+  updatedAt: string;
+  size: number; // KB
+  stargazersCount: number;
+  forksCount: number;
+  openIssuesCount: number;
+  isFork: boolean;
+  parentFullName?: string;
+  description: string | null;
+  language: string | null;
+  topics: string[];
+  hasWiki: boolean;
+  hasPages: boolean;
+  archived: boolean;
+  disabled: boolean;
+  visibility: string;
+}
+
+export interface WeeklyActivity {
+  weekTimestamp: number; // Unix timestamp of the start of the week
+  additions: number;
+  deletions: number;
+  commits: number;
+}
+
+// ── Extended RepoContext with optional forensics data ────
+
+export interface GitForensicsData {
+  commits: CommitInfo[];
+  commitDetails: CommitDetail[]; // details for sampled commits
+  contributors: Contributor[];
+  metadata: RepoMetadata;
+  weeklyActivity: WeeklyActivity[];
 }
 
 export interface UserSession {
